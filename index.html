@@ -19,6 +19,7 @@
             color: var(--text-dark);
             background-color: white;
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
         /* Navigation */
@@ -26,125 +27,142 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1.5rem 5%;
+            padding: 1rem 5%;
             background: white;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         .logo {
-            font-weight: 800;
-            font-size: 1.5rem;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 1.2rem;
+        }
+
+        .logo img {
+            height: 40px; /* Adjust based on your logo design */
+            width: auto;
         }
 
         .nav-links {
-            display: none; /* Hidden on mobile */
-            gap: 2rem;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: var(--text-dark);
-            font-weight: 500;
+            display: none;
+            gap: 1.5rem;
         }
 
         .btn-primary {
             background: var(--primary-blue);
-            color: white !important;
-            padding: 0.8rem 1.5rem;
+            color: white;
+            padding: 0.7rem 1.4rem;
             border-radius: 8px;
             border: none;
             cursor: pointer;
             font-weight: 600;
-            transition: opacity 0.2s;
+            text-decoration: none;
+            transition: transform 0.2s;
         }
+
+        .btn-primary:active { transform: scale(0.95); }
 
         /* Hero Section */
         .hero {
             display: flex;
-            flex-direction: column; /* Stacked for mobile */
-            padding: 4rem 5%;
-            background: linear-gradient(135deg, #ffffff 0%, #eef5ff 100%);
+            flex-direction: column;
+            padding: 3rem 5% 5rem 5%;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
             align-items: center;
             text-align: center;
         }
 
-        .hero-content {
-            flex: 1;
-            max-width: 600px;
-        }
-
         .hero-content h1 {
-            font-size: 3.5rem;
+            font-size: 2.8rem;
             margin-bottom: 1rem;
-            line-height: 1.1;
+            line-height: 1.2;
         }
 
-        .hero-content span {
-            color: var(--primary-blue);
-        }
+        .hero-content span { color: var(--primary-blue); }
 
-        .hero-image {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            margin-top: 3rem;
-        }
-
-        .hero-image img {
-            max-width: 90%;
-            height: auto;
+        .hero-content p {
+            color: var(--text-light);
+            max-width: 500px;
+            margin: 0 auto 2rem auto;
         }
 
         .cta-group {
             display: flex;
-            gap: 1rem;
+            gap: 10px;
             justify-content: center;
-            margin-top: 2rem;
         }
 
-        /* Status Bar (Firebase Monitoring) */
-        #status-bar {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            font-size: 0.8rem;
-            padding: 5px 10px;
-            background: #fff;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        .btn-outline {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 0.7rem 1.4rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
         }
 
-        /* Features Section */
+        .hero-image {
+            margin-top: 4rem;
+            font-size: 8rem;
+            font-weight: 900;
+            color: #0a192f;
+            position: relative;
+            user-select: none;
+        }
+
+        .hero-image span {
+            font-size: 1.5rem;
+            display: block;
+            text-align: right;
+            margin-top: -30px;
+        }
+
+        /* Vision Section */
         .vision-section {
-            display: flex;
-            flex-direction: column;
-            padding: 5rem 5%;
-            gap: 4rem;
+            padding: 4rem 5%;
         }
+
+        .vision-left h2 { font-size: 2rem; margin: 1rem 0; }
 
         .feature-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            margin-bottom: 1.5rem;
+            background: #fff;
+            padding: 1.2rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
             display: flex;
-            align-items: flex-start;
-            gap: 1.5rem;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             text-align: left;
         }
 
-        /* Desktop Responsiveness */
+        .icon-box {
+            background: #eef5ff;
+            min-width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        /* Desktop Adjustments */
         @media (min-width: 992px) {
             .nav-links { display: flex; }
-            .hero { flex-direction: row; text-align: left; }
+            .nav-links a { text-decoration: none; color: var(--text-dark); font-size: 0.95rem; }
+            .hero { flex-direction: row; text-align: left; padding: 6rem 8%; }
+            .hero-content { flex: 1; }
             .hero-content h1 { font-size: 4.5rem; }
+            .hero-content p { margin: 0 0 2.5rem 0; }
             .cta-group { justify-content: flex-start; }
-            .vision-section { flex-direction: row; }
-            .vision-left { flex: 1; }
-            .vision-right { flex: 1; }
+            .hero-image { flex: 1; font-size: 14rem; margin-top: 0; }
+            .vision-section { display: flex; gap: 5%; align-items: center; padding: 6rem 8%; }
+            .vision-left, .vision-right { flex: 1; }
         }
     </style>
 </head>
@@ -152,8 +170,8 @@
 
     <nav>
         <div class="logo">
-            <img src="https://img.icons8.com/color/48/one.png" alt="logo" width="30">
-            1ne Clicker
+            <img src="logo.png" alt="1ne Clicker Logo">
+            <span>1ne Clicker</span>
         </div>
         <div class="nav-links">
             <a href="#">Home</a>
@@ -171,51 +189,47 @@
             <p>Ask anything, create an image, or get any question answered — all in one place.</p>
             <div class="cta-group">
                 <button class="btn-primary">Get Started</button>
-                <button style="background:none; border:1px solid #ddd; padding:0.8rem 1.5rem; border-radius:8px; cursor:pointer;">▶ Learn More</button>
+                <button class="btn-outline">▶ Learn More</button>
             </div>
         </div>
         <div class="hero-image">
-            <div style="font-size: 15rem; font-weight: 900; color: #0a192f; position: relative;">
-                1ne
-                <div style="font-size: 2rem; position: absolute; bottom: 40px; right: 0; color: #333;">Clicker</div>
-            </div>
+            1ne
+            <span>Clicker</span>
         </div>
     </header>
 
     <section class="vision-section">
         <div class="vision-left">
-            <p style="color: var(--primary-blue); font-weight: 700; text-transform: uppercase; font-size: 0.8rem;">Our Vision</p>
-            <h2 style="font-size: 2.5rem; margin-top: 0.5rem;">Making everything accessible with just one click.</h2>
-            <p style="color: var(--text-light);">1ne Clicker is built to simplify the way you interact with information and creativity.</p>
-            <a href="#" style="color: var(--primary-blue); text-decoration: none; font-weight: 600;">Learn more about us →</a>
+            <div style="color: var(--primary-blue); font-weight: 700; font-size: 0.8rem; letter-spacing: 1px;">OUR VISION</div>
+            <h2>Making everything accessible with just one click.</h2>
+            <p style="color: var(--text-light); margin-bottom: 2rem;">1ne Clicker is built to simplify the way you interact with information and creativity.</p>
+            <a href="#" style="color: var(--primary-blue); text-decoration: none; font-weight: 700;">Learn more about us →</a>
         </div>
         
         <div class="vision-right">
             <div class="feature-card">
-                <div style="background: #eef5ff; padding: 15px; border-radius: 10px;">💬</div>
+                <div class="icon-box">💬</div>
                 <div>
                     <h4 style="margin:0">Ask Anything</h4>
-                    <p style="margin:0; color: var(--text-light); font-size: 0.9rem;">Get answers to any question instantly.</p>
+                    <p style="margin:0; color: var(--text-light); font-size: 0.85rem;">Get answers to any question instantly.</p>
                 </div>
             </div>
             <div class="feature-card">
-                <div style="background: #eef5ff; padding: 15px; border-radius: 10px;">🖼️</div>
+                <div class="icon-box">🖼️</div>
                 <div>
                     <h4 style="margin:0">Create Images</h4>
-                    <p style="margin:0; color: var(--text-light); font-size: 0.9rem;">Generate stunning images with ease.</p>
+                    <p style="margin:0; color: var(--text-light); font-size: 0.85rem;">Generate stunning images with ease.</p>
                 </div>
             </div>
             <div class="feature-card">
-                <div style="background: #eef5ff; padding: 15px; border-radius: 10px;">⚡</div>
+                <div class="icon-box">⚡</div>
                 <div>
                     <h4 style="margin:0">Fast & Easy</h4>
-                    <p style="margin:0; color: var(--text-light); font-size: 0.9rem;">Everything you need, just one click away.</p>
+                    <p style="margin:0; color: var(--text-light); font-size: 0.85rem;">Everything you need, just one click away.</p>
                 </div>
             </div>
         </div>
     </section>
-
-    <div id="status-bar">Firebase: <span id="status">Initializing...</span></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -229,15 +243,12 @@
             appId: "1:104489532169:web:6ef47037bc2bbc9f8af1d8"
         };
 
+        // Firebase now initializes silently for a cleaner user experience
         try {
             const app = initializeApp(firebaseConfig);
-            console.log("Firebase initialized:", app);
-            document.getElementById('status').innerText = "Connected";
-            document.getElementById('status').style.color = "green";
+            console.log("Firebase status: Connected successfully.");
         } catch (error) {
-            console.error("Firebase error:", error);
-            document.getElementById('status').innerText = "Failed";
-            document.getElementById('status').style.color = "red";
+            console.error("Firebase connection error:", error);
         }
     </script>
 </body>
