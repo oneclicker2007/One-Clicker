@@ -22,7 +22,79 @@
             overflow-x: hidden;
         }
 
-        /* Navigation */
+        /* --- AUTH SECTION STYLES --- */
+        #auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-light);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .auth-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .auth-container h2 { margin-bottom: 0.5rem; font-size: 1.8rem; }
+        .auth-container p { color: var(--text-light); margin-bottom: 2rem; font-size: 0.9rem; }
+
+        .auth-form input {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        .auth-form input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(0, 98, 255, 0.1);
+        }
+
+        .auth-btn {
+            width: 100%;
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .auth-btn:hover { opacity: 0.9; }
+
+        .toggle-auth {
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .toggle-auth span {
+            color: var(--primary-blue);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Hide main content initially */
+        #main-content { display: none; }
+
+        /* --- ORIGINAL STYLES REMAINING UNCHANGED --- */
         nav {
             display: flex;
             justify-content: space-between;
@@ -43,15 +115,9 @@
             font-size: 1.2rem;
         }
 
-        .logo img {
-            height: 40px; /* Adjust based on your logo design */
-            width: auto;
-        }
+        .logo img { height: 40px; width: auto; }
 
-        .nav-links {
-            display: none;
-            gap: 1.5rem;
-        }
+        .nav-links { display: none; gap: 1.5rem; }
 
         .btn-primary {
             background: var(--primary-blue);
@@ -67,7 +133,6 @@
 
         .btn-primary:active { transform: scale(0.95); }
 
-        /* Hero Section */
         .hero {
             display: flex;
             flex-direction: column;
@@ -77,25 +142,11 @@
             text-align: center;
         }
 
-        .hero-content h1 {
-            font-size: 2.8rem;
-            margin-bottom: 1rem;
-            line-height: 1.2;
-        }
-
+        .hero-content h1 { font-size: 2.8rem; margin-bottom: 1rem; line-height: 1.2; }
         .hero-content span { color: var(--primary-blue); }
+        .hero-content p { color: var(--text-light); max-width: 500px; margin: 0 auto 2rem auto; }
 
-        .hero-content p {
-            color: var(--text-light);
-            max-width: 500px;
-            margin: 0 auto 2rem auto;
-        }
-
-        .cta-group {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
+        .cta-group { display: flex; gap: 10px; justify-content: center; }
 
         .btn-outline {
             background: white;
@@ -122,11 +173,7 @@
             margin-top: -30px;
         }
 
-        /* Vision Section */
-        .vision-section {
-            padding: 4rem 5%;
-        }
-
+        .vision-section { padding: 4rem 5%; }
         .vision-left h2 { font-size: 2rem; margin: 1rem 0; }
 
         .feature-card {
@@ -151,7 +198,6 @@
             border-radius: 8px;
         }
 
-        /* Desktop Adjustments */
         @media (min-width: 992px) {
             .nav-links { display: flex; }
             .nav-links a { text-decoration: none; color: var(--text-dark); font-size: 0.95rem; }
@@ -170,71 +216,96 @@
 </head>
 <body>
 
-    <nav>
-        <div class="logo">
-            <img src="logo.png" alt="1ne Clicker Logo">
-            <span>1ne Clicker</span>
+    <div id="auth-overlay">
+        <div class="auth-container">
+            <div class="logo" style="justify-content: center; margin-bottom: 1.5rem;">
+                <img src="logo.png" alt="1ne Clicker Logo">
+                <span>1ne Clicker</span>
+            </div>
+            <h2 id="auth-title">Welcome Back</h2>
+            <p id="auth-subtitle">Please log in to your account to continue.</p>
+            
+            <div class="auth-form">
+                <input type="email" id="email" placeholder="Email Address" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button class="auth-btn" id="submit-btn">Login</button>
+            </div>
+            
+            <div class="toggle-auth">
+                <p id="toggle-text">Don't have an account? <span onclick="toggleAuthMode()">Sign Up</span></p>
+            </div>
         </div>
-        <div class="nav-links">
-            <a href="#">Home</a>
-            <a href="#">About</a>
-            <a href="#">Features</a>
-            <a href="#">FAQ</a>
-            <a href="#">Contact</a>
-        </div>
-        <button class="btn-primary">Get Started</button>
-    </nav>
+    </div>
 
-    <header class="hero">
-        <div class="hero-content">
-            <h1>One Click.<br><span>Everything.</span></h1>
-            <p>Ask anything, create an image, or get any question answered — all in one place.</p>
-            <div class="cta-group">
-                <button class="btn-primary">Get Started</button>
-                <button class="btn-outline">▶ Learn More</button>
+    <div id="main-content">
+        <nav>
+            <div class="logo">
+                <img src="logo.png" alt="1ne Clicker Logo">
+                <span>1ne Clicker</span>
             </div>
-        </div>
-        <div class="hero-image">
-            1ne
-            <span>Clicker</span>
-        </div>
-    </header>
+            <div class="nav-links">
+                <a href="#">Home</a>
+                <a href="#">About</a>
+                <a href="#">Features</a>
+                <a href="#">FAQ</a>
+                <a href="#">Contact</a>
+            </div>
+            <button class="btn-primary" onclick="handleLogout()">Logout</button>
+        </nav>
 
-    <section class="vision-section">
-        <div class="vision-left">
-            <div style="color: var(--primary-blue); font-weight: 700; font-size: 0.8rem; letter-spacing: 1px;">OUR VISION</div>
-            <h2>Making everything accessible with just one click.</h2>
-            <p style="color: var(--text-light); margin-bottom: 2rem;">1ne Clicker is built to simplify the way you interact with information and creativity.</p>
-            <a href="#" style="color: var(--primary-blue); text-decoration: none; font-weight: 700;">Learn more about us →</a>
-        </div>
-        
-        <div class="vision-right">
-            <div class="feature-card">
-                <div class="icon-box">💬</div>
-                <div>
-                    <h4 style="margin:0">Ask Anything</h4>
-                    <p style="margin:0; color: var(--text-light); font-size: 0.85rem;">Get answers to any question instantly.</p>
+        <header class="hero">
+            <div class="hero-content">
+                <h1>One Click.<br><span>Everything.</span></h1>
+                <p>Ask anything, create an image, or get any question answered — all in one place.</p>
+                <div class="cta-group">
+                    <button class="btn-primary">Get Started</button>
+                    <button class="btn-outline">▶ Learn More</button>
                 </div>
             </div>
-            <div class="feature-card">
-                <div class="icon-box">🖼️</div>
-                <div>
-                    <h4 style="margin:0">Create Images</h4>
-                    <p style="margin:0; color: var(--text-light); font-size: 0.85rem;">Generate stunning images with ease.</p>
+            <div class="hero-image">
+                1ne
+                <span>Clicker</span>
+            </div>
+        </header>
+
+        <section class="vision-section">
+            <div class="vision-left">
+                <div style="color: var(--primary-blue); font-weight: 700; font-size: 0.8rem; letter-spacing: 1px;">OUR VISION</div>
+                <h2>Making everything accessible with just one click.</h2>
+                <p style="color: var(--text-light); margin-bottom: 2rem;">1ne Clicker is built to simplify the way you interact with information and creativity.</p>
+                <a href="#" style="color: var(--primary-blue); text-decoration: none; font-weight: 700;">Learn more about us →</a>
+            </div>
+            
+            <div class="vision-right">
+                <div class="feature-card">
+                    <div class="icon-box">💬</div>
+                    <div>
+                        <h4 style="margin:0">Ask Anything</h4>
+                        <p style="margin:0; color: var(--text-light); font-size: 0.85rem;">Get answers to any question instantly.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="icon-box">🖼️</div>
+                    <div>
+                        <h4 style="margin:0">Create Images</h4>
+                        <p style="margin:0; color: var(--text-light); font-size: 0.85rem;">Generate stunning images with ease.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="icon-box">⚡</div>
+                    <div>
+                        <h4 style="margin:0">Fast & Easy</h4>
+                        <p style="margin:0; color: var(--text-light); font-size: 0.85rem;">Everything you need, just one click away.</p>
+                    </div>
                 </div>
             </div>
-            <div class="feature-card">
-                <div class="icon-box">⚡</div>
-                <div>
-                    <h4 style="margin:0">Fast & Easy</h4>
-                    <p style="margin:0; color: var(--text-light); font-size: 0.85rem;">Everything you need, just one click away.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+        </section>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } 
+        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDdOMnwf1r0e5ETserurMUeRkufc17vE_g",
@@ -245,13 +316,59 @@
             appId: "1:104489532169:web:6ef47037bc2bbc9f8af1d8"
         };
 
-        // Firebase now initializes silently for a cleaner user experience
-        try {
-            const app = initializeApp(firebaseConfig);
-            console.log("Firebase status: Connected successfully.");
-        } catch (error) {
-            console.error("Firebase connection error:", error);
-        }
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        let isLoginMode = true;
+
+        // UI Elements
+        const authOverlay = document.getElementById('auth-overlay');
+        const mainContent = document.getElementById('main-content');
+        const submitBtn = document.getElementById('submit-btn');
+
+        // Toggle between Login and Signup
+        window.toggleAuthMode = () => {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-title').innerText = isLoginMode ? "Welcome Back" : "Create Account";
+            document.getElementById('auth-subtitle').innerText = isLoginMode ? "Please log in to your account." : "Join 1ne Clicker today.";
+            document.getElementById('submit-btn').innerText = isLoginMode ? "Login" : "Sign Up";
+            document.getElementById('toggle-text').innerHTML = isLoginMode ? 
+                `Don't have an account? <span onclick="toggleAuthMode()">Sign Up</span>` : 
+                `Already have an account? <span onclick="toggleAuthMode()">Login</span>`;
+        };
+
+        // Handle Auth logic
+        submitBtn.addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                if (isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                }
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+
+        // Monitor Auth State
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                authOverlay.style.display = 'none';
+                mainContent.style.display = 'block';
+            } else {
+                authOverlay.style.display = 'flex';
+                mainContent.style.display = 'none';
+            }
+        });
+
+        // Global Logout Function
+        window.handleLogout = () => {
+            signOut(auth);
+        };
+
     </script>
 </body>
 </html>
