@@ -10,6 +10,7 @@
             --text-dark: #0a192f;
             --text-light: #546e7a;
             --bg-light: #f8fbff;
+            --error-red: #d32f2f;
         }
 
         body {
@@ -65,6 +66,19 @@
             box-shadow: 0 0 0 3px rgba(0, 98, 255, 0.1);
         }
 
+        /* Professional Error Message Area */
+        #auth-error-msg {
+            color: var(--error-red);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            display: none;
+            text-align: left;
+            background: #fff5f5;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border-left: 3px solid var(--error-red);
+        }
+
         .auth-btn {
             width: 100%;
             background: var(--primary-blue);
@@ -94,7 +108,7 @@
         /* Hide main content initially */
         #main-content { display: none; }
 
-        /* --- ORIGINAL STYLES REMAINING UNCHANGED --- */
+        /* --- ORIGINAL STYLES --- */
         nav {
             display: flex;
             justify-content: space-between;
@@ -226,6 +240,7 @@
             <p id="auth-subtitle">Please log in to your account to continue.</p>
             
             <div class="auth-form">
+                <div id="auth-error-msg"></div>
                 <input type="email" id="email" placeholder="Email Address" required>
                 <input type="password" id="password" placeholder="Password" required>
                 <button class="auth-btn" id="submit-btn">Login</button>
@@ -325,10 +340,49 @@
         const authOverlay = document.getElementById('auth-overlay');
         const mainContent = document.getElementById('main-content');
         const submitBtn = document.getElementById('submit-btn');
+        const errorMsgArea = document.getElementById('auth-error-msg');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+
+        // Professional Error Mapper
+        const showErrorMessage = (code) => {
+            let message = "An unexpected error occurred. Please try again.";
+            
+            switch (code) {
+                case 'auth/invalid-credential':
+                case 'auth/wrong-password':
+                case 'auth/user-not-found':
+                    message = "Invalid email or password. Please check your credentials.";
+                    break;
+                case 'auth/email-already-in-use':
+                    message = "This email is already registered. Try logging in instead.";
+                    break;
+                case 'auth/weak-password':
+                    message = "Password should be at least 6 characters.";
+                    break;
+                case 'auth/invalid-email':
+                    message = "Please enter a valid email address.";
+                    break;
+                case 'auth/too-many-requests':
+                    message = "Too many failed attempts. Please try again later.";
+                    break;
+            }
+            
+            errorMsgArea.innerText = message;
+            errorMsgArea.style.display = 'block';
+        };
+
+        // Clear error when user starts typing again
+        [emailInput, passwordInput].forEach(input => {
+            input.addEventListener('input', () => {
+                errorMsgArea.style.display = 'none';
+            });
+        });
 
         // Toggle between Login and Signup
         window.toggleAuthMode = () => {
             isLoginMode = !isLoginMode;
+            errorMsgArea.style.display = 'none';
             document.getElementById('auth-title').innerText = isLoginMode ? "Welcome Back" : "Create Account";
             document.getElementById('auth-subtitle').innerText = isLoginMode ? "Please log in to your account." : "Join 1ne Clicker today.";
             document.getElementById('submit-btn').innerText = isLoginMode ? "Login" : "Sign Up";
@@ -339,8 +393,13 @@
 
         // Handle Auth logic
         submitBtn.addEventListener('click', async () => {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            if(!email || !password) {
+                showErrorMessage('auth/invalid-email');
+                return;
+            }
 
             try {
                 if (isLoginMode) {
@@ -349,7 +408,7 @@
                     await createUserWithEmailAndPassword(auth, email, password);
                 }
             } catch (error) {
-                alert(error.message);
+                showErrorMessage(error.code);
             }
         });
 
