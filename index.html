@@ -3,39 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Web App</title>
+    <title>One Clicker - Everything in One Place</title>
     <style>
+        :root {
+            --primary-blue: #0062ff;
+            --text-dark: #0a192f;
+            --text-light: #546e7a;
+            --bg-light: #f8fbff;
+        }
+
         body {
-            font-family: sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text-dark);
+            background-color: white;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 5%;
+            background: white;
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-links {
+            display: none; /* Hidden on mobile */
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white !important;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        /* Hero Section */
+        .hero {
+            display: flex;
+            flex-direction: column; /* Stacked for mobile */
+            padding: 4rem 5%;
+            background: linear-gradient(135deg, #ffffff 0%, #eef5ff 100%);
+            align-items: center;
+            text-align: center;
+        }
+
+        .hero-content {
+            flex: 1;
+            max-width: 600px;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        .hero-content span {
+            color: var(--primary-blue);
+        }
+
+        .hero-image {
+            flex: 1;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f4f7f6;
+            margin-top: 3rem;
         }
-        .container {
-            text-align: center;
-            padding: 2rem;
+
+        .hero-image img {
+            max-width: 90%;
+            height: auto;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        /* Status Bar (Firebase Monitoring) */
+        #status-bar {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Features Section */
+        .vision-section {
+            display: flex;
+            flex-direction: column;
+            padding: 5rem 5%;
+            gap: 4rem;
+        }
+
+        .feature-card {
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+            text-align: left;
+        }
+
+        /* Desktop Responsiveness */
+        @media (min-width: 992px) {
+            .nav-links { display: flex; }
+            .hero { flex-direction: row; text-align: left; }
+            .hero-content h1 { font-size: 4.5rem; }
+            .cta-group { justify-content: flex-start; }
+            .vision-section { flex-direction: row; }
+            .vision-left { flex: 1; }
+            .vision-right { flex: 1; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Firebase Project: one-clicker</h1>
-        <p id="status">Initializing Firebase...</p>
-        <p>Open the <b>Browser Console</b> (F12) to see the details.</p>
-    </div>
+    <nav>
+        <div class="logo">
+            <img src="https://img.icons8.com/color/48/one.png" alt="logo" width="30">
+            1ne Clicker
+        </div>
+        <div class="nav-links">
+            <a href="#">Home</a>
+            <a href="#">About</a>
+            <a href="#">Features</a>
+            <a href="#">FAQ</a>
+            <a href="#">Contact</a>
+        </div>
+        <button class="btn-primary">Get Started</button>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1>One Click.<br><span>Everything.</span></h1>
+            <p>Ask anything, create an image, or get any question answered — all in one place.</p>
+            <div class="cta-group">
+                <button class="btn-primary">Get Started</button>
+                <button style="background:none; border:1px solid #ddd; padding:0.8rem 1.5rem; border-radius:8px; cursor:pointer;">▶ Learn More</button>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div style="font-size: 15rem; font-weight: 900; color: #0a192f; position: relative;">
+                1ne
+                <div style="font-size: 2rem; position: absolute; bottom: 40px; right: 0; color: #333;">Clicker</div>
+            </div>
+        </div>
+    </header>
+
+    <section class="vision-section">
+        <div class="vision-left">
+            <p style="color: var(--primary-blue); font-weight: 700; text-transform: uppercase; font-size: 0.8rem;">Our Vision</p>
+            <h2 style="font-size: 2.5rem; margin-top: 0.5rem;">Making everything accessible with just one click.</h2>
+            <p style="color: var(--text-light);">1ne Clicker is built to simplify the way you interact with information and creativity.</p>
+            <a href="#" style="color: var(--primary-blue); text-decoration: none; font-weight: 600;">Learn more about us →</a>
+        </div>
+        
+        <div class="vision-right">
+            <div class="feature-card">
+                <div style="background: #eef5ff; padding: 15px; border-radius: 10px;">💬</div>
+                <div>
+                    <h4 style="margin:0">Ask Anything</h4>
+                    <p style="margin:0; color: var(--text-light); font-size: 0.9rem;">Get answers to any question instantly.</p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div style="background: #eef5ff; padding: 15px; border-radius: 10px;">🖼️</div>
+                <div>
+                    <h4 style="margin:0">Create Images</h4>
+                    <p style="margin:0; color: var(--text-light); font-size: 0.9rem;">Generate stunning images with ease.</p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div style="background: #eef5ff; padding: 15px; border-radius: 10px;">⚡</div>
+                <div>
+                    <h4 style="margin:0">Fast & Easy</h4>
+                    <p style="margin:0; color: var(--text-light); font-size: 0.9rem;">Everything you need, just one click away.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="status-bar">Firebase: <span id="status">Initializing...</span></div>
 
     <script type="module">
-        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
-        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDdOMnwf1r0e5ETserurMUeRkufc17vE_g",
             authDomain: "one-clicker-c35eb.firebaseapp.com",
@@ -45,15 +229,14 @@
             appId: "1:104489532169:web:6ef47037bc2bbc9f8af1d8"
         };
 
-        // Initialize Firebase
         try {
             const app = initializeApp(firebaseConfig);
-            console.log("Firebase initialized successfully:", app);
-            document.getElementById('status').innerText = "Firebase is connected!";
+            console.log("Firebase initialized:", app);
+            document.getElementById('status').innerText = "Connected";
             document.getElementById('status').style.color = "green";
         } catch (error) {
-            console.error("Firebase initialization error:", error);
-            document.getElementById('status').innerText = "Initialization failed.";
+            console.error("Firebase error:", error);
+            document.getElementById('status').innerText = "Failed";
             document.getElementById('status').style.color = "red";
         }
     </script>
