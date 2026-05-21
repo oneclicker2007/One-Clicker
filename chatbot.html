@@ -13,19 +13,18 @@
             --message-ai: #ffffff;
         }
 
-        /* Responsive Container */
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             margin: 0;
             background: var(--bg-light);
             display: flex;
             flex-direction: column;
-            height: 100vh; /* Full screen height */
-            height: 100dvh; /* Support for mobile browser bars */
+            height: 100vh;
+            height: 100dvh; /* Dynamic height for mobile browsers */
             overflow: hidden;
         }
 
-        /* Mobile-Friendly Header */
+        /* Header */
         nav {
             background: white;
             padding: 10px 5%;
@@ -35,12 +34,13 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             height: 60px;
             flex-shrink: 0;
+            z-index: 100;
         }
 
         .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; text-decoration: none; color: var(--text-dark); }
         .logo img { height: 30px; }
 
-        /* Chat Area - Scrollable */
+        /* Chat History Area */
         #chat-container {
             flex: 1;
             overflow-y: auto;
@@ -49,14 +49,15 @@
             flex-direction: column;
             gap: 12px;
             background: var(--bg-light);
+            scroll-behavior: smooth;
         }
 
-        /* Responsive Message Bubbles */
+        /* Message Bubbles */
         .message {
             max-width: 85%;
             padding: 12px 16px;
             border-radius: 18px;
-            font-size: 15px;
+            font-size: 16px; /* Best for mobile readability */
             line-height: 1.4;
             word-wrap: break-word;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
@@ -77,20 +78,20 @@
             border: 1px solid #eef0f2;
         }
 
-        /* Typing Indicator */
-        #typing {
+        /* Status Indicator */
+        #status-indicator {
             font-size: 13px;
             color: #666;
             margin-left: 10px;
             display: none;
-            padding-bottom: 5px;
+            padding: 5px 0;
         }
 
-        /* Fixed Footer for Input */
+        /* Bottom Input Section */
         .input-wrapper {
             background: white;
             padding: 12px 15px;
-            padding-bottom: env(safe-area-inset-bottom, 12px); /* For iPhone notch */
+            padding-bottom: env(safe-area-inset-bottom, 12px);
             border-top: 1px solid #eee;
             flex-shrink: 0;
         }
@@ -104,34 +105,35 @@
 
         input {
             flex: 1;
-            padding: 12px 15px;
+            padding: 12px 18px;
             border: 1px solid #ddd;
-            border-radius: 25px; /* Round for mobile feel */
+            border-radius: 25px;
             outline: none;
-            font-size: 16px; /* Prevents auto-zoom on iPhone */
+            font-size: 16px;
         }
 
-        button {
+        input:focus { border-color: var(--primary-blue); }
+
+        #send-btn {
             background: var(--primary-blue);
             color: white;
             border: none;
-            width: 45px;
-            height: 45px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: 0.2s;
+            transition: background 0.2s, transform 0.1s;
+            flex-shrink: 0;
         }
 
-        button:active { transform: scale(0.9); }
+        #send-btn:active { transform: scale(0.9); }
 
-        /* Tablet/PC Adjustments */
         @media (min-width: 768px) {
             #chat-container { padding: 30px 20%; }
             .message { max-width: 70%; }
-            nav { padding: 10px 10%; }
         }
     </style>
 </head>
@@ -139,10 +141,10 @@
 
     <nav>
         <a href="index.html" class="logo">
-            <img src="logo.png" alt="1ne Clicker">
+            <img src="logo.png" alt="1ne Clicker Logo">
             <span>AI Bot</span>
         </a>
-        <a href="products.html" style="font-size: 14px; text-decoration: none; color: #666;">Exit</a>
+        <a href="products.html" style="font-size: 14px; text-decoration: none; color: #666; font-weight: 600;">Exit</a>
     </nav>
 
     <div id="chat-container">
@@ -150,62 +152,76 @@
     </div>
 
     <div class="input-wrapper">
-        <div id="typing">Assistant is typing...</div>
+        <div id="status-indicator">Thinking...</div>
         <div class="input-area">
             <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off">
-            <button id="send-btn">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            <button id="send-btn" type="button">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
             </button>
         </div>
     </div>
 
     <script type="module">
-        // Import Google GenAI using a robust CDN
         import { GoogleGenAI } from "https://esm.run/@google/generai";
 
+        // Verified Gemini API Key
         const API_KEY = "AIzaSyAonWqFYZEqYBhcXYwC00p9hZ5xPDx0ijw"; 
         const genAI = new GoogleGenAI(API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        const container = document.getElementById('chat-container');
-        const input = document.getElementById('user-input');
-        const btn = document.getElementById('send-btn');
-        const typing = document.getElementById('typing');
+        const chatBox = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const status = document.getElementById('status-indicator');
 
-        async function sendMessage() {
-            const text = input.value.trim();
+        // Function to process and send the message
+        async function handleMessage() {
+            const text = userInput.value.trim();
             if (!text) return;
 
-            // Add user message
+            // 1. Clear input and add user message to UI
+            userInput.value = '';
             addBubble(text, 'user-message');
-            input.value = '';
             
-            // Show typing & scroll
-            typing.style.display = 'block';
-            container.scrollTop = container.scrollHeight;
+            // 2. Show status and scroll
+            status.style.display = 'block';
+            chatBox.scrollTop = chatBox.scrollHeight;
 
             try {
+                // 3. Call AI API
                 const result = await model.generateContent(text);
                 const response = await result.response;
-                typing.style.display = 'none';
-                addBubble(response.text(), 'ai-message');
-            } catch (err) {
-                typing.style.display = 'none';
-                addBubble("Error: " + err.message, 'ai-message');
-                console.error(err);
+                const aiText = response.text();
+
+                // 4. Update UI with AI response
+                status.style.display = 'none';
+                addBubble(aiText, 'ai-message');
+            } catch (error) {
+                status.style.display = 'none';
+                addBubble("Service temporarily unavailable. Please try again.", 'ai-message');
+                console.error("API Error:", error);
             }
         }
 
-        function addBubble(text, type) {
-            const div = document.createElement('div');
-            div.className = `message ${type}`;
-            div.innerText = text;
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
+        // Helper to create message bubbles
+        function addBubble(content, type) {
+            const bubble = document.createElement('div');
+            bubble.className = `message ${type}`;
+            bubble.innerText = content;
+            chatBox.appendChild(bubble);
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        btn.onclick = sendMessage;
-        input.onkeypress = (e) => { if(e.key === 'Enter') sendMessage(); };
+        // Attach event listeners for Send button and Enter key
+        sendBtn.addEventListener('click', handleMessage);
+        
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleMessage();
+            }
+        });
     </script>
 </body>
 </html>
