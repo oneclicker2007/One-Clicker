@@ -24,6 +24,7 @@
             overflow: hidden;
         }
 
+        /* Header */
         nav {
             background: white;
             padding: 10px 5%;
@@ -39,6 +40,11 @@
         .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; text-decoration: none; color: var(--text-dark); }
         .logo img { height: 30px; }
 
+        .nav-actions { display: flex; gap: 15px; align-items: center; }
+        .nav-btn { font-size: 14px; text-decoration: none; color: #666; font-weight: 600; cursor: pointer; border: none; background: none; }
+        .clear-btn { color: #ff4d4d; }
+
+        /* Chat History Area */
         #chat-container {
             flex: 1;
             overflow-y: auto;
@@ -50,6 +56,7 @@
             scroll-behavior: smooth;
         }
 
+        /* Message Bubbles */
         .message {
             max-width: 85%;
             padding: 12px 16px;
@@ -75,6 +82,7 @@
             border: 1px solid #eef0f2;
         }
 
+        /* Status Indicator */
         #status-indicator {
             font-size: 13px;
             color: #666;
@@ -83,6 +91,7 @@
             padding: 5px 0;
         }
 
+        /* Bottom Input Section */
         .input-wrapper {
             background: white;
             padding: 12px 15px;
@@ -139,15 +148,18 @@
             <img src="logo.png" alt="1ne Clicker Logo">
             <span>AI Bot</span>
         </a>
-        <a href="products.html" style="font-size: 14px; text-decoration: none; color: #666; font-weight: 600;">Exit</a>
+        <div class="nav-actions">
+            <button class="nav-btn" onclick="startNewChat()">New Chat</button>
+            <button class="nav-btn clear-btn" onclick="clearHistory()">Clear History</button>
+            <a href="products.html" class="nav-btn">Exit</a>
+        </div>
     </nav>
 
     <div id="chat-container">
-        <div class="message ai-message">Welcome back! I am now updated and ready to help. What's on your mind?</div>
-    </div>
+        </div>
 
     <div class="input-wrapper">
-        <div id="status-indicator">AI is thinking...</div>
+        <div id="status-indicator">Thinking...</div>
         <div class="input-area">
             <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off">
             <button id="send-btn" type="button">
@@ -158,19 +170,38 @@
         </div>
     </div>
 
-    <script type="module">
-        // FIXED: Corrected the library import path
-        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
-
-        // UPDATED: Your new API key is now active
-        const API_KEY = "AIzaSyAjW0jctMHRyTD-53S9NdQi4NO-9EjAJeg"; 
-        const genAI = new GoogleGenerativeAI(API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
+    <script>
         const chatBox = document.getElementById('chat-container');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
         const status = document.getElementById('status-indicator');
+
+        // On Load: Load history from Local Storage
+        window.onload = () => {
+            const savedChat = JSON.parse(localStorage.getItem('1neClickerChat')) || [];
+            if (savedChat.length === 0) {
+                addBubble("Welcome back! I'm your secure AI assistant. How can I help you today?", 'ai-message', false);
+            } else {
+                savedChat.forEach(msg => addBubble(msg.text, msg.type, false));
+            }
+        };
+
+        // Function to start a completely fresh chat session
+        window.startNewChat = () => {
+            if(confirm("Start a new chat? (This won't delete old history, just clears the view)")) {
+                chatBox.innerHTML = '';
+                addBubble("New chat started! How can I help?", 'ai-message', false);
+            }
+        };
+
+        // Function to wipe all saved data
+        window.clearHistory = () => {
+            if(confirm("Delete all chat history permanently?")) {
+                localStorage.removeItem('1neClickerChat');
+                chatBox.innerHTML = '';
+                addBubble("History cleared. How can I help you today?", 'ai-message', false);
+            }
+        };
 
         async function handleMessage() {
             const text = userInput.value.trim();
@@ -178,38 +209,49 @@
 
             userInput.value = '';
             addBubble(text, 'user-message');
+            saveMessage(text, 'user-message');
             
             status.style.display = 'block';
             chatBox.scrollTop = chatBox.scrollHeight;
 
             try {
-                const result = await model.generateContent(text);
-                const response = await result.response;
-                const aiText = response.text();
+                // TALKS TO YOUR VERCEL API BRIDGE
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: text })
+                });
+
+                const data = await response.json();
+                const aiText = data.text || "Service unavailable.";
 
                 status.style.display = 'none';
                 addBubble(aiText, 'ai-message');
+                saveMessage(aiText, 'ai-message');
             } catch (error) {
                 status.style.display = 'none';
-                addBubble("I encountered an issue connecting to the brain. Please refresh or check your connection.", 'ai-message');
+                addBubble("I encountered an issue connecting. Please ensure your Vercel deployment is active.", 'ai-message');
                 console.error("API Error:", error);
             }
         }
 
-        function addBubble(content, type) {
+        function addBubble(content, type, shouldScroll = true) {
             const bubble = document.createElement('div');
             bubble.className = `message ${type}`;
             bubble.innerText = content;
             chatBox.appendChild(bubble);
-            chatBox.scrollTop = chatBox.scrollHeight;
+            if (shouldScroll) chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function saveMessage(text, type) {
+            const history = JSON.parse(localStorage.getItem('1neClickerChat')) || [];
+            history.push({ text, type });
+            localStorage.setItem('1neClickerChat', JSON.stringify(history));
         }
 
         sendBtn.addEventListener('click', handleMessage);
-        
         userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                handleMessage();
-            }
+            if (e.key === 'Enter') handleMessage();
         });
     </script>
 </body>
