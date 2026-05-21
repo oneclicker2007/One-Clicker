@@ -1,25 +1,29 @@
-// This file goes in: /api/chat.js
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
+// api/chat.js
 export default async function handler(req, res) {
-  // 1. Only allow the "POST" method (sending data)
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ text: "Method not allowed" });
   }
 
-  // 2. Get your Secret Key from Vercel's Environment Variables
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const { prompt } = req.body;
+  const apiKey = process.env.GEMINI_API_KEY;
 
   try {
-    const { prompt } = req.body;
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
+    });
+
+    const data = await response.json();
     
-    // 3. Send the AI's answer back to your website
-    return res.status(200).json({ text: response.text() });
+    // Extract the text from Gemini's specific response format
+    const aiText = data.candidates[0].content.parts[0].text;
+    
+    res.status(200).json({ text: aiText });
   } catch (error) {
-    return res.status(500).json({ error: 'The AI Bridge is broken.' });
+    console.error(error);
+    res.status(500).json({ text: "Error communicating with Gemini API." });
   }
 }
-
