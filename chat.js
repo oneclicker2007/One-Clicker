@@ -7,6 +7,10 @@ export default async function handler(req, res) {
   const { prompt } = req.body;
   const apiKey = process.env.GEMINI_API_KEY;
 
+  if (!apiKey) {
+    return res.status(500).json({ text: "API Key is missing in Vercel settings." });
+  }
+
   try {
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
@@ -18,12 +22,15 @@ export default async function handler(req, res) {
 
     const data = await response.json();
     
-    // Extract the text from Gemini's specific response format
-    const aiText = data.candidates[0].content.parts[0].text;
-    
-    res.status(200).json({ text: aiText });
+    // Safety check for the response structure
+    if (data.candidates && data.candidates[0].content) {
+        const aiText = data.candidates[0].content.parts[0].text;
+        res.status(200).json({ text: aiText });
+    } else {
+        res.status(500).json({ text: "The AI returned an empty response. Check your API quota." });
+    }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ text: "Error communicating with Gemini API." });
+    console.error("Fetch Error:", error);
+    res.status(500).json({ text: "Connection error. Check Vercel logs." });
   }
 }
