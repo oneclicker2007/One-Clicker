@@ -18,7 +18,7 @@ export default async function handler(req, res) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`   // ✅ FIX: include your key
+          'Authorization': `Bearer ${apiKey}`   // ✅ critical fix
         },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }]
