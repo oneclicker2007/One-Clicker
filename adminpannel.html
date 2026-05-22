@@ -6,8 +6,9 @@
 <title>Admin Panel - 1ne Clicker</title>
 <style>
 :root{--primary:#0062ff;--text:#0a192f;--muted:#546e7a;--bg:#f8fbff;--card:#fff;--border:#e3e8ef;--err:#d32f2f;--ok:#16a34a;--shadow:rgba(0,0,0,.06)}
+[data-theme="dark"]{--text:#e6e6e6;--muted:#a0aec0;--bg:#0f1419;--card:#1a202c;--border:#2d3748;--shadow:rgba(0,0,0,.4)}
 *{box-sizing:border-box}
-body{font-family:'Segoe UI',sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.6}
+body{font-family:'Segoe UI',sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.6;transition:.3s}
 #gate{position:fixed;inset:0;background:var(--bg);display:flex;justify-content:center;align-items:center;z-index:2000;padding:1rem}
 .gate-box{background:var(--card);padding:2.5rem;border-radius:16px;box-shadow:0 10px 30px var(--shadow);width:100%;max-width:400px;text-align:center}
 .gate-box h2{margin:0 0 .3rem}
@@ -20,9 +21,17 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)
 .btn-danger{background:var(--err)}
 .btn-out{background:transparent;color:var(--text);border:1px solid var(--border)}
 .err{color:var(--err);background:#fff5f5;padding:8px 12px;border-radius:6px;border-left:3px solid var(--err);font-size:.85rem;margin-bottom:1rem;display:none}
+[data-theme="dark"] .err{background:#2d1a1a}
 #panel{display:none}
 nav{background:var(--card);padding:1rem 5%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 10px var(--shadow);position:sticky;top:0;z-index:100}
 .logo{font-weight:800;color:var(--primary);font-size:1.2rem}
+.nav-right{display:flex;align-items:center;gap:1rem}
+.theme-switch{position:relative;width:46px;height:24px}
+.theme-switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#ccc;border-radius:24px;cursor:pointer;transition:.3s}
+.slider:before{content:"";position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+input:checked+.slider{background:var(--primary)}
+input:checked+.slider:before{transform:translateX(22px)}
 .tabs{display:flex;gap:.5rem;padding:1rem 5%;background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto}
 .tab{padding:.6rem 1.2rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:.9rem;white-space:nowrap;color:var(--muted)}
 .tab.active{background:var(--primary);color:#fff}
@@ -45,7 +54,12 @@ table th{background:var(--bg);font-weight:700;font-size:.8rem;text-transform:upp
 .t-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;flex-wrap:wrap;gap:.5rem}
 .t-head h4{margin:0}
 .badge{padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700}
-.b-br{background:#dbeafe;color:#1e40af}.b-cs{background:#fee2e2;color:#991b1b}.b-lw{background:#fef3c7;color:#92400e}
+.b-br{background:#dbeafe;color:#1e40af}
+.b-cs{background:#fee2e2;color:#991b1b}
+.b-lw{background:#fef3c7;color:#92400e}
+[data-theme="dark"] .b-br{background:#1e3a8a;color:#dbeafe}
+[data-theme="dark"] .b-cs{background:#7f1d1d;color:#fee2e2}
+[data-theme="dark"] .b-lw{background:#78350f;color:#fef3c7}
 .meta{display:flex;flex-wrap:wrap;gap:1rem;font-size:.85rem;color:var(--muted);margin:.5rem 0}
 .regs{margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--ok);color:#fff;padding:.8rem 1.4rem;border-radius:8px;z-index:3000;display:none}
@@ -60,21 +74,23 @@ details summary{cursor:pointer;font-weight:600;color:var(--primary);font-size:.9
 
 <div id="gate">
   <div class="gate-box">
-    <div class="logo" style="font-size:1.5rem;margin-bottom:.5rem">🛡️ Admin Panel</div>
+    <div class="logo" style="font-size:1.5rem;margin-bottom:.5rem">Admin Panel</div>
     <h2>Restricted Access</h2>
     <p>Enter admin credentials to continue</p>
     <div class="err" id="gate-err"></div>
     <input type="text" id="g-user" placeholder="Username" autocomplete="off">
     <input type="password" id="g-pass" placeholder="Password">
     <button class="btn" id="g-btn" style="width:100%">Access Panel</button>
-    <p style="margin-top:1rem"><a href="index.html" style="color:var(--muted);font-size:.8rem;text-decoration:none">← Back to Home</a></p>
   </div>
 </div>
 
 <div id="panel">
   <nav>
-    <div class="logo">1ne Clicker — Admin</div>
-    <button class="btn btn-out" onclick="adminLogout()">Logout</button>
+    <div class="logo">1ne Clicker Admin</div>
+    <div class="nav-right">
+      <label class="theme-switch"><input type="checkbox" id="theme-toggle"><span class="slider"></span></label>
+      <button class="btn btn-out" onclick="adminLogout()">Logout</button>
+    </div>
   </nav>
   <div class="tabs">
     <div class="tab active" onclick="showTab('users')">All Users</div>
@@ -112,9 +128,9 @@ details summary{cursor:pointer;font-weight:600;color:var(--primary);font-size:.9
           <div>
             <label>Game Mode</label>
             <select id="c-mode">
-              <option value="BR">BR — Battle Royale</option>
-              <option value="CS">CS — Clash Squad</option>
-              <option value="LW">LW — Lone Wolf</option>
+              <option value="BR">BR  Battle Royale</option>
+              <option value="CS">CS  Clash Squad</option>
+              <option value="LW">LW  Lone Wolf</option>
             </select>
           </div>
           <div>
@@ -134,11 +150,11 @@ details summary{cursor:pointer;font-weight:600;color:var(--primary);font-size:.9
         </div>
         <div class="row">
           <div>
-            <label>Prize Per Kill (₹)</label>
+            <label>Prize Per Kill ()</label>
             <input type="number" id="c-kill" min="0" placeholder="10">
           </div>
           <div>
-            <label>Booyah Prize (₹)</label>
+            <label>Booyah Prize ()</label>
             <input type="number" id="c-booyah" min="0" placeholder="500">
           </div>
         </div>
@@ -160,6 +176,22 @@ details summary{cursor:pointer;font-weight:600;color:var(--primary);font-size:.9
 </div>
 
 <div class="toast" id="toast"></div>
+
+<script>
+// Theme setup
+(function(){
+  const t=localStorage.getItem('adminTheme')||'light';
+  if(t==='dark')document.documentElement.setAttribute('data-theme','dark');
+  document.addEventListener('DOMContentLoaded',()=>{
+    const tg=document.getElementById('theme-toggle');
+    tg.checked=t==='dark';
+    tg.onchange=()=>{
+      if(tg.checked){document.documentElement.setAttribute('data-theme','dark');localStorage.setItem('adminTheme','dark');}
+      else{document.documentElement.removeAttribute('data-theme');localStorage.setItem('adminTheme','light');}
+    };
+  });
+})();
+</script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -232,7 +264,7 @@ function renderUsers(list){
   if(!list.length){tb.innerHTML='<tr><td colspan="3" class="empty">No users registered yet</td></tr>';return;}
   tb.innerHTML=list.map(u=>`<tr>
     <td>${esc(u.email)}</td>
-    <td><span class="pw">${esc(u.password||'—')}</span></td>
+    <td><span class="pw">${esc(u.password||'')}</span></td>
     <td style="font-size:.75rem;color:var(--muted)">${esc(u.uid||u.id)}</td>
   </tr>`).join('');
 }
@@ -272,17 +304,30 @@ $('c-btn').onclick=async()=>{
   const rules=$('c-rules').value.trim();
   const errEl=$('c-err');
   errEl.style.display='none';
+  
   if(!title||!mode||!slots||!regClose||!start){
     errEl.innerText='Please fill all required fields';errEl.style.display='block';return;
   }
+  
   if(slots<1){errEl.innerText='Slots must be at least 1';errEl.style.display='block';return;}
+  
+  const regCloseDate=new Date(regClose);
+  const startDate=new Date(start);
+  
+  if(startDate<=regCloseDate){
+    errEl.innerText='Tournament start time must be after registration closes';errEl.style.display='block';return;
+  }
+  
   $('c-btn').disabled=true;
   try{
     await addDoc(collection(db,'tournaments'),{
-      title,mode,maxSlots:slots,
-      regCloseAt:Timestamp.fromDate(new Date(regClose)),
-      startAt:Timestamp.fromDate(new Date(start)),
-      prizePerKill:kill,prizeBooyah:booyah,
+      title,
+      mode,
+      maxSlots:slots,
+      regCloseAt:Timestamp.fromDate(regCloseDate),
+      startAt:Timestamp.fromDate(startDate),
+      prizePerKill:kill,
+      prizeBooyah:booyah,
       rules:rules||'1. No hacks or unfair advantages of any kind.\n2. Cheating leads to immediate disqualification.\n3. Be respectful to all players.',
       registeredCount:0,
       createdAt:serverTimestamp()
@@ -328,8 +373,8 @@ async function renderManage(){
       </div>
       <div class="meta">
         <span>Slots: <b>${t.registeredCount||0}/${t.maxSlots}</b></span>
-        <span>Per Kill: <b>₹${t.prizePerKill||0}</b></span>
-        <span>Booyah: <b>₹${t.prizeBooyah||0}</b></span>
+        <span>Per Kill: <b>${t.prizePerKill||0}</b></span>
+        <span>Booyah: <b>${t.prizeBooyah||0}</b></span>
         <span>Reg. closes: <b>${fmt(t.regCloseAt)}</b></span>
         <span>Starts: <b>${fmt(t.startAt)}</b></span>
       </div>
@@ -357,7 +402,7 @@ window.delTournament=async(id,title)=>{
   }catch(e){toast('Delete failed: '+e.message,true);}
 };
 
-function fmt(ts){if(!ts?.toDate)return'—';return ts.toDate().toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
+function fmt(ts){if(!ts?.toDate)return'';return ts.toDate().toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 </script>
 </body>
