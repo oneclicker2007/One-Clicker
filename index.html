@@ -89,7 +89,6 @@ input:checked+.slider:before{transform:translateX(22px)}
     <input type="password" id="password" placeholder="Password">
     <button class="btn" id="submit-btn" style="width:100%">Login</button>
     <div class="toggle"><span id="toggle-link" onclick="toggleMode()">Don't have an account? Sign Up</span></div>
-    <div class="toggle" style="margin-top:.5rem"><a href="adminpannel.html" style="color:var(--muted);font-size:.75rem;text-decoration:none">Admin Access →</a></div>
   </div>
 </div>
 
@@ -104,7 +103,7 @@ input:checked+.slider:before{transform:translateX(22px)}
 
   <section class="hero">
     <h1>Dominate the Arena.<br><span>Free Fire Max.</span></h1>
-    <p>Join professional esports tournaments, compete with top players, and win exciting prizes in ₹.</p>
+    <p>Join professional esports tournaments, compete with top players, and win exciting prizes in .</p>
     <button class="btn" onclick="document.getElementById('tournaments').scrollIntoView({behavior:'smooth'})">View Tournaments</button>
   </section>
 
@@ -243,10 +242,20 @@ function tStatus(t){
   const regClose=t.regCloseAt?.toMillis?.()||0;
   const startAt=t.startAt?.toMillis?.()||0;
   const filled=(t.registeredCount||0)>=t.maxSlots;
+  
+  // If tournament has started, it's closed
   if(now>=startAt&&startAt>0)return{key:'closed',label:'Tournament Closed',cls:'s-closed'};
+  
+  // If slots are full, can't register
   if(filled)return{key:'full',label:'Slots Full',cls:'s-full'};
+  
+  // If registration period has ended, registration is closed (but tournament not started yet)
   if(now>=regClose&&regClose>0)return{key:'closed',label:'Registration Closed',cls:'s-closed'};
+  
+  // If registration hasn't started yet (more than 1 hour away)
   if(now<regClose-3600000)return{key:'up',label:'Upcoming',cls:'s-up'};
+  
+  // Registration is actively happening
   return{key:'live',label:'Live',cls:'s-live'};
 }
 
@@ -268,7 +277,7 @@ function loadMyRegistrations(){
 }
 
 function fmtDate(ts){
-  if(!ts?.toDate)return'—';
+  if(!ts?.toDate)return'';
   return ts.toDate().toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
 }
 
@@ -289,8 +298,8 @@ function renderTournaments(){
         <span class="status ${st.cls}">${st.label}</span>
       </div>
       <div class="prize">
-        <span>Per Kill: <strong>₹${t.prizePerKill||0}</strong></span>
-        <span>Booyah: <strong>₹${t.prizeBooyah||0}</strong></span>
+        <span>Per Kill: <strong>${t.prizePerKill||0}</strong></span>
+        <span>Booyah: <strong>${t.prizeBooyah||0}</strong></span>
       </div>
       <div class="info"><span>Slots: ${slots}</span><span>Starts: ${fmtDate(t.startAt)}</span></div>
       <div class="info" style="border-top:none;padding-top:0"><span>Reg. closes: ${fmtDate(t.regCloseAt)}</span></div>
@@ -325,7 +334,7 @@ window.openJoin=id=>{
   if(!t)return;
   joinId=id;
   $('jm-title').innerText='Register: '+t.title;
-  $('jm-sub').innerText=modeName[t.mode]+' • '+(t.registeredCount||0)+'/'+t.maxSlots+' slots filled';
+  $('jm-sub').innerText=modeName[t.mode]+'  '+(t.registeredCount||0)+'/'+t.maxSlots+' slots filled';
   $('jm-username').value='';$('jm-uid').value='';
   $('jm-err').style.display='none';
   $('join-modal').classList.add('show');
