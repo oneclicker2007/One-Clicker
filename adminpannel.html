@@ -1,1 +1,364 @@
-hi
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - 1ne Clicker</title>
+<style>
+:root{--primary:#0062ff;--text:#0a192f;--muted:#546e7a;--bg:#f8fbff;--card:#fff;--border:#e3e8ef;--err:#d32f2f;--ok:#16a34a;--shadow:rgba(0,0,0,.06)}
+*{box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.6}
+#gate{position:fixed;inset:0;background:var(--bg);display:flex;justify-content:center;align-items:center;z-index:2000;padding:1rem}
+.gate-box{background:var(--card);padding:2.5rem;border-radius:16px;box-shadow:0 10px 30px var(--shadow);width:100%;max-width:400px;text-align:center}
+.gate-box h2{margin:0 0 .3rem}
+.gate-box p{color:var(--muted);font-size:.85rem;margin-bottom:1.5rem}
+input,select,textarea{width:100%;padding:.7rem;border:1px solid var(--border);border-radius:8px;margin-bottom:.8rem;font-size:.95rem;font-family:inherit;background:var(--card);color:var(--text)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)}
+.btn{background:var(--primary);color:#fff;padding:.7rem 1.2rem;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:.9rem}
+.btn:hover{opacity:.9}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-danger{background:var(--err)}
+.btn-out{background:transparent;color:var(--text);border:1px solid var(--border)}
+.err{color:var(--err);background:#fff5f5;padding:8px 12px;border-radius:6px;border-left:3px solid var(--err);font-size:.85rem;margin-bottom:1rem;display:none}
+#panel{display:none}
+nav{background:var(--card);padding:1rem 5%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 10px var(--shadow);position:sticky;top:0;z-index:100}
+.logo{font-weight:800;color:var(--primary);font-size:1.2rem}
+.tabs{display:flex;gap:.5rem;padding:1rem 5%;background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto}
+.tab{padding:.6rem 1.2rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:.9rem;white-space:nowrap;color:var(--muted)}
+.tab.active{background:var(--primary);color:#fff}
+.container{max-width:1200px;margin:0 auto;padding:2rem 5%}
+.section{display:none}
+.section.active{display:block}
+.card-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 2px 8px var(--shadow)}
+.card-box h3{margin-top:0}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+@media(max-width:600px){.row{grid-template-columns:1fr}}
+label{font-size:.85rem;font-weight:600;display:block;margin-bottom:.3rem}
+.search-wrap{position:relative}
+.suggest{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--border);border-radius:8px;max-height:250px;overflow-y:auto;z-index:50;display:none}
+.suggest div{padding:.6rem .8rem;cursor:pointer;border-bottom:1px solid var(--border);font-size:.9rem}
+.suggest div:hover{background:var(--bg)}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+table th,table td{padding:.7rem;text-align:left;border-bottom:1px solid var(--border)}
+table th{background:var(--bg);font-weight:700;font-size:.8rem;text-transform:uppercase;color:var(--muted)}
+.t-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem;margin-bottom:1rem}
+.t-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;flex-wrap:wrap;gap:.5rem}
+.t-head h4{margin:0}
+.badge{padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700}
+.b-br{background:#dbeafe;color:#1e40af}.b-cs{background:#fee2e2;color:#991b1b}.b-lw{background:#fef3c7;color:#92400e}
+.meta{display:flex;flex-wrap:wrap;gap:1rem;font-size:.85rem;color:var(--muted);margin:.5rem 0}
+.regs{margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--ok);color:#fff;padding:.8rem 1.4rem;border-radius:8px;z-index:3000;display:none}
+.toast.show{display:block}
+.toast.err{background:var(--err)}
+details summary{cursor:pointer;font-weight:600;color:var(--primary);font-size:.9rem}
+.pw{font-family:monospace;background:var(--bg);padding:2px 6px;border-radius:4px}
+.empty{text-align:center;padding:2rem;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-box">
+    <div class="logo" style="font-size:1.5rem;margin-bottom:.5rem">🛡️ Admin Panel</div>
+    <h2>Restricted Access</h2>
+    <p>Enter admin credentials to continue</p>
+    <div class="err" id="gate-err"></div>
+    <input type="text" id="g-user" placeholder="Username" autocomplete="off">
+    <input type="password" id="g-pass" placeholder="Password">
+    <button class="btn" id="g-btn" style="width:100%">Access Panel</button>
+    <p style="margin-top:1rem"><a href="index.html" style="color:var(--muted);font-size:.8rem;text-decoration:none">← Back to Home</a></p>
+  </div>
+</div>
+
+<div id="panel">
+  <nav>
+    <div class="logo">1ne Clicker — Admin</div>
+    <button class="btn btn-out" onclick="adminLogout()">Logout</button>
+  </nav>
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('users')">All Users</div>
+    <div class="tab" onclick="showTab('create')">Create Tournament</div>
+    <div class="tab" onclick="showTab('manage')">Manage Tournaments</div>
+  </div>
+
+  <div class="container">
+
+    <!-- USERS -->
+    <div class="section active" id="s-users">
+      <div class="card-box">
+        <h3>All Registered Users</h3>
+        <div class="search-wrap">
+          <input type="text" id="user-search" placeholder="Search by email..." autocomplete="off">
+          <div class="suggest" id="suggest"></div>
+        </div>
+        <div style="overflow-x:auto">
+          <table id="users-table">
+            <thead><tr><th>Email</th><th>Password</th><th>User ID</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CREATE -->
+    <div class="section" id="s-create">
+      <div class="card-box">
+        <h3>Create New Tournament</h3>
+        <div class="err" id="c-err"></div>
+        <label>Tournament Title</label>
+        <input type="text" id="c-title" placeholder="e.g. Weekend Booyah Battle">
+        <div class="row">
+          <div>
+            <label>Game Mode</label>
+            <select id="c-mode">
+              <option value="BR">BR — Battle Royale</option>
+              <option value="CS">CS — Clash Squad</option>
+              <option value="LW">LW — Lone Wolf</option>
+            </select>
+          </div>
+          <div>
+            <label>Max Slots</label>
+            <input type="number" id="c-slots" min="1" placeholder="48">
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Registration Closes At</label>
+            <input type="datetime-local" id="c-regclose">
+          </div>
+          <div>
+            <label>Tournament Starts At</label>
+            <input type="datetime-local" id="c-start">
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Prize Per Kill (₹)</label>
+            <input type="number" id="c-kill" min="0" placeholder="10">
+          </div>
+          <div>
+            <label>Booyah Prize (₹)</label>
+            <input type="number" id="c-booyah" min="0" placeholder="500">
+          </div>
+        </div>
+        <label>Rules (leave empty for default)</label>
+        <textarea id="c-rules" rows="4" placeholder="Default: No hacks. No unfair advantages."></textarea>
+        <button class="btn" id="c-btn" style="margin-top:.5rem">Post Tournament</button>
+      </div>
+    </div>
+
+    <!-- MANAGE -->
+    <div class="section" id="s-manage">
+      <div class="card-box">
+        <h3>All Tournaments & Registrations</h3>
+        <div id="manage-list"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, getDocs, addDoc, deleteDoc, setDoc, onSnapshot, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDdOMnwf1r0e5ETserurMUeRkufc17vE_g",
+  authDomain: "one-clicker-c35eb.firebaseapp.com",
+  projectId: "one-clicker-c35eb",
+  storageBucket: "one-clicker-c35eb.firebasestorage.app",
+  messagingSenderId: "104489532169",
+  appId: "1:104489532169:web:6ef47037bc2bbc9f8af1d8"
+};
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+const ADMIN_USER="ADMIN2007", ADMIN_PASS="MONEY2007";
+const $=id=>document.getElementById(id);
+const toast=(m,err=false)=>{const t=$('toast');t.innerText=m;t.className='toast show'+(err?' err':'');setTimeout(()=>t.className='toast',2500);};
+
+let users=[], tournaments=[], unsubs=[];
+
+// --- GATE ---
+if(sessionStorage.getItem('adminAuth')==='1'){enterPanel();}
+
+$('g-btn').onclick=()=>{
+  const u=$('g-user').value.trim(),p=$('g-pass').value;
+  if(u===ADMIN_USER&&p===ADMIN_PASS){
+    sessionStorage.setItem('adminAuth','1');
+    enterPanel();
+  }else{
+    $('gate-err').innerText='Invalid admin credentials';
+    $('gate-err').style.display='block';
+  }
+};
+$('g-pass').addEventListener('keypress',e=>{if(e.key==='Enter')$('g-btn').click();});
+
+window.adminLogout=()=>{sessionStorage.removeItem('adminAuth');location.reload();};
+
+function enterPanel(){
+  $('gate').style.display='none';
+  $('panel').style.display='block';
+  // Sign in anonymously so Firestore rules (request.auth != null) pass
+  signInAnonymously(auth).catch(e=>console.error(e));
+  onAuthStateChanged(auth,user=>{
+    if(user){loadUsers();loadTournaments();}
+  });
+}
+
+window.showTab=name=>{
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  event.target.classList.add('active');
+  $('s-'+name).classList.add('active');
+};
+
+// --- USERS ---
+function loadUsers(){
+  const un=onSnapshot(collection(db,'users'),snap=>{
+    users=[];snap.forEach(d=>users.push({id:d.id,...d.data()}));
+    renderUsers(users);
+  });
+  unsubs.push(un);
+}
+
+function renderUsers(list){
+  const tb=$('users-table').querySelector('tbody');
+  if(!list.length){tb.innerHTML='<tr><td colspan="3" class="empty">No users registered yet</td></tr>';return;}
+  tb.innerHTML=list.map(u=>`<tr>
+    <td>${esc(u.email)}</td>
+    <td><span class="pw">${esc(u.password||'—')}</span></td>
+    <td style="font-size:.75rem;color:var(--muted)">${esc(u.uid||u.id)}</td>
+  </tr>`).join('');
+}
+
+$('user-search').addEventListener('input',e=>{
+  const v=e.target.value.toLowerCase().trim();
+  const sg=$('suggest');
+  if(!v){sg.style.display='none';renderUsers(users);return;}
+  const matches=users.filter(u=>(u.email||'').toLowerCase().includes(v));
+  // Suggestions
+  if(matches.length){
+    sg.innerHTML=matches.slice(0,8).map(u=>`<div onclick="pickUser('${esc(u.email)}')">${esc(u.email)}</div>`).join('');
+    sg.style.display='block';
+  }else{sg.style.display='none';}
+  renderUsers(matches);
+});
+
+window.pickUser=email=>{
+  $('user-search').value=email;
+  $('suggest').style.display='none';
+  renderUsers(users.filter(u=>u.email===email));
+};
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.search-wrap'))$('suggest').style.display='none';
+});
+
+// --- CREATE TOURNAMENT ---
+$('c-btn').onclick=async()=>{
+  const title=$('c-title').value.trim();
+  const mode=$('c-mode').value;
+  const slots=parseInt($('c-slots').value);
+  const regClose=$('c-regclose').value;
+  const start=$('c-start').value;
+  const kill=parseInt($('c-kill').value)||0;
+  const booyah=parseInt($('c-booyah').value)||0;
+  const rules=$('c-rules').value.trim();
+  const errEl=$('c-err');
+  errEl.style.display='none';
+  if(!title||!mode||!slots||!regClose||!start){
+    errEl.innerText='Please fill all required fields';errEl.style.display='block';return;
+  }
+  if(slots<1){errEl.innerText='Slots must be at least 1';errEl.style.display='block';return;}
+  $('c-btn').disabled=true;
+  try{
+    await addDoc(collection(db,'tournaments'),{
+      title,mode,maxSlots:slots,
+      regCloseAt:Timestamp.fromDate(new Date(regClose)),
+      startAt:Timestamp.fromDate(new Date(start)),
+      prizePerKill:kill,prizeBooyah:booyah,
+      rules:rules||'1. No hacks or unfair advantages of any kind.\n2. Cheating leads to immediate disqualification.\n3. Be respectful to all players.',
+      registeredCount:0,
+      createdAt:serverTimestamp()
+    });
+    toast('Tournament posted!');
+    ['c-title','c-slots','c-regclose','c-start','c-kill','c-booyah','c-rules'].forEach(id=>$(id).value='');
+    showTabByName('manage');
+  }catch(e){errEl.innerText=e.message;errEl.style.display='block';}
+  $('c-btn').disabled=false;
+};
+
+function showTabByName(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  const idx={users:0,create:1,manage:2}[name];
+  document.querySelectorAll('.tab')[idx].classList.add('active');
+  $('s-'+name).classList.add('active');
+}
+
+// --- MANAGE TOURNAMENTS ---
+function loadTournaments(){
+  const un=onSnapshot(collection(db,'tournaments'),async snap=>{
+    tournaments=[];snap.forEach(d=>tournaments.push({id:d.id,...d.data()}));
+    tournaments.sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0));
+    await renderManage();
+  });
+  unsubs.push(un);
+}
+
+const modeBadge={BR:'b-br',CS:'b-cs',LW:'b-lw'};
+const modeName={BR:'Battle Royale',CS:'Clash Squad',LW:'Lone Wolf'};
+
+async function renderManage(){
+  const list=$('manage-list');
+  if(!tournaments.length){list.innerHTML='<div class="empty">No tournaments posted yet.</div>';return;}
+  const blocks=await Promise.all(tournaments.map(async t=>{
+    const regs=await getDocs(collection(db,'tournaments',t.id,'registrations'));
+    const regsArr=[];regs.forEach(r=>regsArr.push({id:r.id,...r.data()}));
+    return `<div class="t-card">
+      <div class="t-head">
+        <div><h4>${esc(t.title)} <span class="badge ${modeBadge[t.mode]}">${modeName[t.mode]}</span></h4></div>
+        <button class="btn btn-danger" onclick="delTournament('${t.id}','${esc(t.title)}')">Delete</button>
+      </div>
+      <div class="meta">
+        <span>Slots: <b>${t.registeredCount||0}/${t.maxSlots}</b></span>
+        <span>Per Kill: <b>₹${t.prizePerKill||0}</b></span>
+        <span>Booyah: <b>₹${t.prizeBooyah||0}</b></span>
+        <span>Reg. closes: <b>${fmt(t.regCloseAt)}</b></span>
+        <span>Starts: <b>${fmt(t.startAt)}</b></span>
+      </div>
+      <details><summary>View Rules</summary><pre style="white-space:pre-wrap;font-family:inherit;background:var(--bg);padding:.8rem;border-radius:6px;margin-top:.5rem;font-size:.85rem">${esc(t.rules)}</pre></details>
+      <div class="regs">
+        <strong>Registrations (${regsArr.length}):</strong>
+        ${regsArr.length?`<div style="overflow-x:auto;margin-top:.5rem"><table>
+          <thead><tr><th>#</th><th>In-Game Name</th><th>UID</th><th>Email</th></tr></thead>
+          <tbody>${regsArr.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.inGameUsername)}</td><td>${esc(r.gameUid)}</td><td>${esc(r.userEmail)}</td></tr>`).join('')}</tbody>
+        </table></div>`:'<div class="empty">No registrations yet.</div>'}
+      </div>
+    </div>`;
+  }));
+  list.innerHTML=blocks.join('');
+}
+
+window.delTournament=async(id,title)=>{
+  if(!confirm(`Delete tournament "${title}"? This also deletes all its registrations.`))return;
+  try{
+    // Delete all registrations first
+    const regs=await getDocs(collection(db,'tournaments',id,'registrations'));
+    await Promise.all(regs.docs.map(d=>deleteDoc(d.ref)));
+    await deleteDoc(doc(db,'tournaments',id));
+    toast('Tournament deleted');
+  }catch(e){toast('Delete failed: '+e.message,true);}
+};
+
+function fmt(ts){if(!ts?.toDate)return'—';return ts.toDate().toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+</script>
+</body>
+</html>
