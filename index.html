@@ -47,7 +47,7 @@
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
-        // REPLACE WITH YOUR ACTUAL FIREBASE CONFIG
+        // REPLACE WITH YOUR ACTUAL FIREBASE CONFIG FROM FIREBASE CONSOLE
     };
     
     const app = initializeApp(firebaseConfig);
@@ -66,8 +66,9 @@
     };
 
     authBtn.onclick = async () => {
-        const email = document.getElementById('email').value;
+        const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
+        if (!email || !password) return alert("Fill all fields");
         try {
             if (isLogin) await signInWithEmailAndPassword(auth, email, password);
             else await createUserWithEmailAndPassword(auth, email, password);
