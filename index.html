@@ -7,19 +7,16 @@
     <style>
         :root { --bg: #ffffff; --text: #0a192f; --border: #e3e8ef; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
-        
         #auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 1rem; }
         .auth-box { width: 100%; max-width: 400px; padding: 2rem; border: 1px solid var(--border); border-radius: 12px; }
         input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
         .btn { width: 100%; padding: 12px; background: #000; color: #fff; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; }
         .err { color: #d32f2f; font-size: 0.85rem; margin-bottom: 10px; display: none; font-weight: 500; }
-        
         #main { display: none; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
         .view { display: none; padding: 1rem; }
         .view.active { display: block; }
         .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
         .char-count { font-size: 0.8rem; color: #666; text-align: right; margin-bottom: 5px; }
-        
         .nav-bottom { position: fixed; bottom: 0; width: 100%; max-width: 600px; height: 60px; background: #ffffff; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; }
         .nav-btn { background: none; border: none; cursor: pointer; padding: 10px; }
         .nav-btn svg { width: 28px; height: 28px; fill: #000000; }
@@ -39,20 +36,14 @@
 </div>
 
 <div id="main">
-    <div id="home-view" class="view active">
-        <h1>Feed</h1>
-        <div id="feed-container"></div>
-    </div>
+    <div id="home-view" class="view active"><h1>Feed</h1><div id="feed-container"></div></div>
     <div id="post-view" class="view">
         <h1>Create Post</h1>
         <div id="char-count" class="char-count">0 / 1000</div>
         <textarea id="post-text" placeholder="What's happening?" maxlength="1000" oninput="updateCount()"></textarea>
         <button class="btn" onclick="createPost()">Post</button>
     </div>
-    <div id="profile-view" class="view">
-        <h1>Profile</h1>
-        <button class="btn" onclick="logout()" style="background:#d32f2f">Logout</button>
-    </div>
+    <div id="profile-view" class="view"><h1>Profile</h1><button class="btn" onclick="logout()" style="background:#d32f2f">Logout</button></div>
 
     <nav class="nav-bottom">
         <button class="nav-btn" onclick="switchView('home-view')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button>
@@ -66,20 +57,22 @@
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    const firebaseConfig = { /* Your config remains unchanged */ };
+    const firebaseConfig = {
+        apiKey: "AIzaSyDdOMnwf1r0e5ETserurMUeRkufc17vE_g",
+        authDomain: "one-clicker-c35eb.firebaseapp.com",
+        projectId: "one-clicker-c35eb",
+        storageBucket: "one-clicker-c35eb.firebasestorage.app",
+        messagingSenderId: "104489532169",
+        appId: "1:104489532169:web:6ef47037bc2bbc9f8af1d8"
+    };
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
     let currentUser = null;
 
-    window.updateCount = () => {
-        document.getElementById('char-count').innerText = `${document.getElementById('post-text').value.length} / 1000`;
-    };
-
-    window.switchView = (id) => {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    };
+    window.updateCount = () => document.getElementById('char-count').innerText = `${document.getElementById('post-text').value.length} / 1000`;
+    window.switchView = (id) => { document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); document.getElementById(id).classList.add('active'); };
 
     window.createPost = async () => {
         const text = document.getElementById('post-text').value.trim();
@@ -92,9 +85,7 @@
         } catch (e) { alert("Error: " + e.message); }
     };
 
-    window.deletePost = async (id) => {
-        if(confirm("Delete this post?")) await deleteDoc(doc(db, "posts", id));
-    };
+    window.deletePost = async (id) => { if(confirm("Delete?")) await deleteDoc(doc(db, "posts", id)); };
 
     onAuthStateChanged(auth, user => {
         currentUser = user;
@@ -103,26 +94,19 @@
         if (user) {
             onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), snap => {
                 const container = document.getElementById('feed-container');
-                container.innerHTML = snap.empty ? '<p>No posts yet. Be the first to share something!</p>' : '';
+                container.innerHTML = snap.empty ? '<p>No posts yet.</p>' : '';
                 snap.forEach(doc => {
                     const data = doc.data();
-                    const date = data.createdAt?.toDate().toLocaleDateString();
-                    container.innerHTML += `<div class="post-card"><p>${data.content.replace(/</g, "&lt;")}</p><small>${date || 'Just now'}</small><br>${data.authorUID === user.uid ? `<button onclick="deletePost('${doc.id}')" style="color:red;border:none;background:none;cursor:pointer">Delete</button>` : ''}</div>`;
+                    container.innerHTML += `<div class="post-card"><p>${data.content.replace(/</g, "&lt;")}</p><small>${data.createdAt ? data.createdAt.toDate().toLocaleDateString() : 'Just now'}</small><br>${data.authorUID === user.uid ? `<button onclick="deletePost('${doc.id}')" style="color:red;border:none;background:none;cursor:pointer">Delete</button>` : ''}</div>`;
                 });
             });
         }
     });
 
     document.getElementById('auth-btn').onclick = async () => {
-        const e = document.getElementById('email').value, p = document.getElementById('password').value;
-        const errEl = document.getElementById('auth-err');
-        try {
-            document.getElementById('auth-title').innerText === "Login" ? await signInWithEmailAndPassword(auth, e, p) : await createUserWithEmailAndPassword(auth, e, p);
-        } catch (err) {
-            const msgs = {'auth/email-already-in-use': 'Email is already registered.', 'auth/invalid-credential': 'Wrong email or password.'};
-            errEl.innerText = msgs[err.code] || 'Authentication failed.';
-            errEl.style.display = 'block';
-        }
+        const e = document.getElementById('email').value, p = document.getElementById('password').value, errEl = document.getElementById('auth-err');
+        try { document.getElementById('auth-title').innerText === "Login" ? await signInWithEmailAndPassword(auth, e, p) : await createUserWithEmailAndPassword(auth, e, p); }
+        catch (err) { errEl.innerText = "Auth failed: " + err.code; errEl.style.display = 'block'; }
     };
     window.logout = () => signOut(auth);
 </script>
