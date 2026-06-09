@@ -1,24 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Social Platform | Connect</title>
-<style>
-    :root { --bg: #ffffff; --text: #0a192f; --primary: #000000; --border: #e3e8ef; --card: #ffffff; }
-    body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
-    #auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 1rem; }
-    .auth-box { width: 100%; max-width: 400px; padding: 2rem; border: 1px solid var(--border); border-radius: 12px; }
-    input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
-    .btn { width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; }
-    .err { color: #d32f2f; font-size: 0.85rem; margin-bottom: 10px; display: none; }
-    #main { display: none; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
-    .view { display: none; padding: 1rem; }
-    .view.active { display: block; }
-    .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
-    .nav-bottom { position: fixed; bottom: 0; width: 100%; max-width: 600px; height: 60px; background: #fff; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; }
-    .nav-btn { background: none; border: none; cursor: pointer; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Platform | Connect</title>
+    <style>
+        :root { --bg: #ffffff; --text: #0a192f; --border: #e3e8ef; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
+        
+        #auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 1rem; }
+        .auth-box { width: 100%; max-width: 400px; padding: 2rem; border: 1px solid var(--border); border-radius: 12px; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; background: #000; color: #fff; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; }
+        .err { color: #d32f2f; font-size: 0.85rem; margin-bottom: 10px; display: none; font-weight: 500; }
+        
+        #main { display: none; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
+        .view { display: none; padding: 1rem; }
+        .view.active { display: block; }
+        .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+        
+        .nav-bottom { position: fixed; bottom: 0; width: 100%; max-width: 600px; height: 60px; background: #ffffff; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; }
+        .nav-btn { background: none; border: none; cursor: pointer; padding: 10px; }
+        .nav-btn svg { width: 28px; height: 28px; fill: #000000; }
+    </style>
 </head>
 <body>
 
@@ -37,15 +41,15 @@
     <div id="home-view" class="view active"><h1>Feed</h1><div id="feed-container"></div></div>
     <div id="post-view" class="view">
         <h1>Create Post</h1>
-        <textarea id="post-text" placeholder="What's happening? (max 1000 chars)" maxlength="1000"></textarea>
+        <textarea id="post-text" placeholder="What's happening?" maxlength="1000"></textarea>
         <button class="btn" onclick="createPost()">Post</button>
     </div>
     <div id="profile-view" class="view"><h1>Profile</h1><button class="btn" onclick="logout()" style="background:#d32f2f">Logout</button></div>
 
     <nav class="nav-bottom">
-        <button class="nav-btn" onclick="switchView('home-view')">Home</button>
-        <button class="nav-btn" onclick="switchView('post-view')">Post</button>
-        <button class="nav-btn" onclick="switchView('profile-view')">Profile</button>
+        <button class="nav-btn" onclick="switchView('home-view')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button>
+        <button class="nav-btn" onclick="switchView('post-view')"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
+        <button class="nav-btn" onclick="switchView('profile-view')"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button>
     </nav>
 </div>
 
@@ -68,38 +72,29 @@
     const db = getFirestore(app);
     let currentUser = null;
 
-    // View Switching
     window.switchView = (id) => {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     };
 
-    // Create Post
     window.createPost = async () => {
         const text = document.getElementById('post-text').value.trim();
         if (!text) return;
         try {
-            await addDoc(collection(db, "posts"), {
-                content: text,
-                authorUID: currentUser.uid,
-                createdAt: serverTimestamp()
-            });
+            await addDoc(collection(db, "posts"), { content: text, authorUID: currentUser.uid, createdAt: serverTimestamp() });
             document.getElementById('post-text').value = '';
             switchView('home-view');
-        } catch (e) { alert("Error posting: " + e.message); }
+        } catch (e) { alert("Error: " + e.message); }
     };
 
-    // Delete Post
     window.deletePost = async (id) => {
         if(confirm("Delete this post?")) await deleteDoc(doc(db, "posts", id));
     };
 
-    // Feed Listener
     onAuthStateChanged(auth, user => {
         currentUser = user;
         document.getElementById('auth-overlay').style.display = user ? 'none' : 'flex';
         document.getElementById('main').style.display = user ? 'block' : 'none';
-        
         if (user) {
             const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
             onSnapshot(q, snap => {
@@ -107,20 +102,29 @@
                 container.innerHTML = '';
                 snap.forEach(doc => {
                     const data = doc.data();
-                    const isOwner = data.authorUID === user.uid;
-                    container.innerHTML += `
-                        <div class="post-card">
-                            <p>${data.content.replace(/</g, "&lt;")}</p>
-                            ${isOwner ? `<button onclick="deletePost('${doc.id}')" style="color:red">Delete</button>` : ''}
-                        </div>`;
+                    container.innerHTML += `<div class="post-card"><p>${data.content.replace(/</g, "&lt;")}</p>${data.authorUID === user.uid ? `<button onclick="deletePost('${doc.id}')" style="color:red;border:none;background:none;cursor:pointer">Delete</button>` : ''}</div>`;
                 });
             });
         }
     });
 
-    // Auth Logic (Same as before)
-    document.getElementById('toggle-auth').onclick = () => { /* ... toggle logic ... */ };
-    document.getElementById('auth-btn').onclick = async () => { /* ... auth logic ... */ };
+    document.getElementById('toggle-auth').onclick = () => {
+        let isLogin = document.getElementById('auth-title').innerText === "Login";
+        document.getElementById('auth-title').innerText = isLogin ? "Sign Up" : "Login";
+        document.getElementById('auth-btn').innerText = isLogin ? "Register" : "Continue";
+        document.getElementById('toggle-auth').innerText = isLogin ? "Already have an account? Login" : "Create an account instead";
+    };
+
+    document.getElementById('auth-btn').onclick = async () => {
+        const e = document.getElementById('email').value.trim(), p = document.getElementById('password').value.trim();
+        const errEl = document.getElementById('auth-err');
+        try {
+            document.getElementById('auth-title').innerText === "Login" ? await signInWithEmailAndPassword(auth, e, p) : await createUserWithEmailAndPassword(auth, e, p);
+        } catch (err) {
+            errEl.innerText = err.code === 'auth/invalid-credential' ? 'Incorrect email or password.' : 'An error occurred.';
+            errEl.style.display = 'block';
+        }
+    };
     window.logout = () => signOut(auth);
 </script>
 </body>
