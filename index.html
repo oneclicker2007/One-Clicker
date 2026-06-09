@@ -3,375 +3,62 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>1ne Clicker - Esports Tournaments</title>
+<title>Social Platform</title>
 <style>
-:root{--primary:#0062ff;--primary-dark:#0048bd;--text:#0a192f;--muted:#546e7a;--bg:#f8fbff;--card:#fff;--border:#e3e8ef;--err:#d32f2f;--ok:#16a34a;--warn:#f59e0b;--shadow:rgba(0,0,0,.06)}
-[data-theme="dark"]{--text:#e6e6e6;--muted:#a0aec0;--bg:#0f1419;--card:#1a202c;--border:#2d3748;--shadow:rgba(0,0,0,.4)}
-*{box-sizing:border-box}
-body{font-family:'Segoe UI',sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.6;transition:.3s}
+:root{--primary:#0062ff;--bg:#f8fbff;--card:#fff;--border:#e3e8ef;--text:#0a192f}
+[data-theme="dark"]{--bg:#0f1419;--card:#1a202c;--border:#2d3748;--text:#e6e6e6}
+body{font-family:sans-serif;margin:0;background:var(--bg);color:var(--text)}
 #auth-overlay{position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;justify-content:center;align-items:center;padding:1rem}
-.auth-box{background:var(--card);padding:2.5rem;border-radius:16px;box-shadow:0 10px 30px var(--shadow);width:100%;max-width:400px;text-align:center}
-.auth-box h2{margin:.5rem 0}
-.auth-box p{color:var(--muted);font-size:.9rem;margin-bottom:1.5rem}
-.auth-box input{width:100%;padding:.8rem;margin-bottom:1rem;border:1px solid var(--border);border-radius:8px;font-size:1rem;background:var(--card);color:var(--text)}
-.auth-box input:focus{outline:none;border-color:var(--primary)}
-.err{color:var(--err);background:#fff5f5;padding:8px 12px;border-radius:6px;border-left:3px solid var(--err);font-size:.85rem;text-align:left;margin-bottom:1rem;display:none}
-[data-theme="dark"] .err{background:#2d1a1a}
-.btn{background:var(--primary);color:#fff;padding:.8rem 1.4rem;border:none;border-radius:8px;font-weight:600;cursor:pointer;transition:.2s;font-size:.95rem}
-.btn:hover{background:var(--primary-dark)}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.btn-out{background:transparent;color:var(--text);border:1px solid var(--border)}
-.btn-danger{background:var(--err)}
-.toggle{margin-top:1.2rem;font-size:.85rem;color:var(--muted)}
-.toggle span{color:var(--primary);cursor:pointer;font-weight:600}
-#main{display:none}
-nav{display:flex;justify-content:space-between;align-items:center;padding:1rem 5%;background:var(--card);position:sticky;top:0;z-index:100;box-shadow:0 2px 10px var(--shadow)}
-.logo{font-weight:800;font-size:1.2rem;color:var(--primary)}
-.nav-right{display:flex;align-items:center;gap:1rem}
-.theme-switch{position:relative;width:46px;height:24px}
-.theme-switch input{opacity:0;width:0;height:0}
-.slider{position:absolute;inset:0;background:#ccc;border-radius:24px;cursor:pointer;transition:.3s}
-.slider:before{content:"";position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
-input:checked+.slider{background:var(--primary)}
-input:checked+.slider:before{transform:translateX(22px)}
-.hero{padding:4rem 5%;text-align:center;background:linear-gradient(135deg,var(--card),var(--bg))}
-.hero h1{font-size:2.5rem;margin:0 0 1rem}
-.hero h1 span{color:var(--primary)}
-.hero p{color:var(--muted);max-width:600px;margin:0 auto 2rem}
-.section{padding:3rem 5%;max-width:1200px;margin:0 auto}
-.section h2{font-size:1.8rem;margin-bottom:.3rem}
-.section .sub{color:var(--muted);margin-bottom:2rem}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;box-shadow:0 4px 15px var(--shadow);display:flex;flex-direction:column;gap:.6rem;transition:transform .2s}
-.card:hover{transform:translateY(-4px)}
-.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem}
-.card h3{margin:0;font-size:1.15rem}
-.badge{padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
-.b-br{background:#dbeafe;color:#1e40af}
-.b-cs{background:#fee2e2;color:#991b1b}
-.b-lw{background:#fef3c7;color:#92400e}
-[data-theme="dark"] .b-br{background:#1e3a8a;color:#dbeafe}
-[data-theme="dark"] .b-cs{background:#7f1d1d;color:#fee2e2}
-[data-theme="dark"] .b-lw{background:#78350f;color:#fef3c7}
-.status{padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700}
-.s-live{background:#dcfce7;color:#166534}
-.s-up{background:#dbeafe;color:#1e40af}
-.s-full{background:#fee2e2;color:#991b1b}
-.s-closed{background:#e5e7eb;color:#4b5563}
-.card .info{font-size:.85rem;color:var(--muted);display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:.6rem;margin-top:.3rem}
-.prize{display:flex;gap:1rem;font-size:.85rem}
-.prize strong{color:var(--primary)}
-.card-actions{display:flex;gap:.5rem;margin-top:.5rem}
-.card-actions .btn{flex:1;padding:.6rem;font-size:.85rem}
-.empty{text-align:center;padding:3rem;color:var(--muted);background:var(--card);border:2px dashed var(--border);border-radius:14px}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;justify-content:center;align-items:center;z-index:1500;padding:1rem}
-.modal.show{display:flex}
-.modal-box{background:var(--card);border-radius:14px;padding:2rem;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
-.modal-box h3{margin-top:0}
-.modal-box input,.modal-box textarea{width:100%;padding:.7rem;border:1px solid var(--border);border-radius:8px;margin-bottom:.8rem;background:var(--card);color:var(--text);font-family:inherit;font-size:.95rem}
-.modal-box label{font-size:.85rem;font-weight:600;display:block;margin-bottom:.3rem}
-.rules-list{background:var(--bg);padding:1rem;border-radius:8px;font-size:.9rem;white-space:pre-wrap;max-height:300px;overflow-y:auto}
-.toast{position:fixed;bottom:20px;right:20px;background:var(--ok);color:#fff;padding:.8rem 1.4rem;border-radius:8px;z-index:3000;display:none;box-shadow:0 4px 15px rgba(0,0,0,.2)}
-.toast.show{display:block}
-.toast.err{background:var(--err)}
-@media(min-width:768px){.hero h1{font-size:3.5rem}}
+.auth-box{background:var(--card);padding:2rem;border-radius:12px;width:100%;max-width:350px}
+.btn{background:var(--primary);color:#fff;padding:.8rem;border:none;border-radius:6px;width:100%;cursor:pointer}
+#main{display:none;padding-bottom:80px}
+.feed{padding:1rem;max-width:600px;margin:0 auto}
+.post-card{background:var(--card);padding:1rem;border:1px solid var(--border);border-radius:8px;margin-bottom:1rem}
+.nav-bottom{position:fixed;bottom:0;width:100%;background:var(--card);display:flex;border-top:1px solid var(--border);height:60px}
+.nav-btn{flex:1;border:none;background:none;cursor:pointer;border-right:1px solid var(--border)}
+.nav-btn:last-child{border-right:none}
+.nav-btn:hover{background:var(--bg)}
 </style>
 </head>
 <body>
 
 <div id="auth-overlay">
   <div class="auth-box">
-    <div class="logo" style="font-size:1.5rem;margin-bottom:.5rem">1ne Clicker</div>
-    <h2 id="auth-title">Welcome Back</h2>
-    <p id="auth-sub">Log in to join tournaments</p>
-    <div class="err" id="auth-err"></div>
-    <input type="email" id="email" placeholder="Email Address">
-    <input type="password" id="password" placeholder="Password">
-    <button class="btn" id="submit-btn" style="width:100%">Login</button>
-    <div class="toggle"><span id="toggle-link" onclick="toggleMode()">Don't have an account? Sign Up</span></div>
+    <h2>Social Login</h2>
+    <input type="email" id="email" style="width:100%;margin-bottom:10px" placeholder="Email">
+    <input type="password" id="password" style="width:100%;margin-bottom:10px" placeholder="Password">
+    <button class="btn" id="submit-btn">Login</button>
   </div>
 </div>
 
 <div id="main">
-  <nav>
-    <div class="logo">1ne Clicker</div>
-    <div class="nav-right">
-      <label class="theme-switch"><input type="checkbox" id="theme-toggle"><span class="slider"></span></label>
-      <button class="btn btn-out" onclick="logout()">Logout</button>
-    </div>
-  </nav>
-
-  <section class="hero">
-    <h1>Dominate the Arena.<br><span>Free Fire Max.</span></h1>
-    <p>Join professional esports tournaments, compete with top players, and win exciting prizes in .</p>
-    <button class="btn" onclick="document.getElementById('tournaments').scrollIntoView({behavior:'smooth'})">View Tournaments</button>
-  </section>
-
-  <section class="section" id="tournaments">
-    <h2>Live Tournaments</h2>
-    <p class="sub">Register before slots fill up</p>
-    <div id="t-grid" class="grid"></div>
-  </section>
-</div>
-
-<!-- Join Modal -->
-<div class="modal" id="join-modal">
-  <div class="modal-box">
-    <h3 id="jm-title">Register for Tournament</h3>
-    <p class="sub" id="jm-sub" style="color:var(--muted);font-size:.85rem"></p>
-    <div class="err" id="jm-err"></div>
-    <label>In-Game Username</label>
-    <input type="text" id="jm-username" placeholder="e.g. ProGamer123">
-    <label>UID (Game ID)</label>
-    <input type="text" id="jm-uid" placeholder="Your Free Fire UID">
-    <div style="display:flex;gap:.5rem;margin-top:.5rem">
-      <button class="btn btn-out" onclick="closeModal('join-modal')" style="flex:1">Cancel</button>
-      <button class="btn" id="jm-submit" style="flex:1">Submit</button>
-    </div>
+  <div class="feed" id="feed"></div>
+  <div class="nav-bottom">
+    <button class="nav-btn" onclick="showHome()">Home</button>
+    <button class="nav-btn" onclick="showPost()">Post</button>
+    <button class="nav-btn" onclick="showProfile()">Profile</button>
   </div>
 </div>
-
-<!-- Rules Modal -->
-<div class="modal" id="rules-modal">
-  <div class="modal-box">
-    <h3>Tournament Rules</h3>
-    <div class="rules-list" id="rules-content"></div>
-    <button class="btn" onclick="closeModal('rules-modal')" style="width:100%;margin-top:1rem">Close</button>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-// Theme
-(function(){
-  const t=localStorage.getItem('theme')||'light';
-  if(t==='dark')document.documentElement.setAttribute('data-theme','dark');
-  document.addEventListener('DOMContentLoaded',()=>{
-    const tg=document.getElementById('theme-toggle');
-    tg.checked=t==='dark';
-    tg.onchange=()=>{
-      if(tg.checked){document.documentElement.setAttribute('data-theme','dark');localStorage.setItem('theme','dark');}
-      else{document.documentElement.removeAttribute('data-theme');localStorage.setItem('theme','light');}
-    };
-  });
-})();
-</script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, deleteDoc, query, where, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDdOMnwf1r0e5ETserurMUeRkufc17vE_g",
-  authDomain: "one-clicker-c35eb.firebaseapp.com",
-  projectId: "one-clicker-c35eb",
-  storageBucket: "one-clicker-c35eb.firebasestorage.app",
-  messagingSenderId: "104489532169",
-  appId: "1:104489532169:web:6ef47037bc2bbc9f8af1d8"
-};
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
+// Initialize with your Firebase Config
+const app = initializeApp({...});
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-let isLogin=true, currentUser=null, tournaments=[], userRegs={};
-
-const $=id=>document.getElementById(id);
-const toast=(msg,err=false)=>{const t=$('toast');t.innerText=msg;t.className='toast show'+(err?' err':'');setTimeout(()=>t.className='toast',2500);};
-const errMsg=code=>({
-  'auth/invalid-credential':'Invalid email or password.',
-  'auth/wrong-password':'Invalid email or password.',
-  'auth/user-not-found':'Invalid email or password.',
-  'auth/email-already-in-use':'This email is already registered.',
-  'auth/weak-password':'Password must be at least 6 characters.',
-  'auth/invalid-email':'Invalid email format.'
-})[code]||'An error occurred. Try again.';
-
-window.toggleMode=()=>{
-  isLogin=!isLogin;
-  $('auth-err').style.display='none';
-  $('auth-title').innerText=isLogin?'Welcome Back':'Create Account';
-  $('auth-sub').innerText=isLogin?'Log in to join tournaments':'Sign up to start competing';
-  $('submit-btn').innerText=isLogin?'Login':'Sign Up';
-  $('toggle-link').innerText=isLogin?"Don't have an account? Sign Up":"Already have an account? Login";
-};
-
-['email','password'].forEach(id=>$(id).addEventListener('input',()=>$('auth-err').style.display='none'));
-
-$('submit-btn').onclick=async()=>{
-  const e=$('email').value.trim(),p=$('password').value;
-  if(!e||!p){$('auth-err').innerText='Please fill all fields';$('auth-err').style.display='block';return;}
-  $('submit-btn').disabled=true;
-  try{
-    if(isLogin){
-      await signInWithEmailAndPassword(auth,e,p);
-    }else{
-      const cred=await createUserWithEmailAndPassword(auth,e,p);
-      // Store user profile (including password, per requirement)
-      await setDoc(doc(db,'users',cred.user.uid),{
-        email:e,
-        password:p,
-        uid:cred.user.uid,
-        createdAt:serverTimestamp()
-      });
-    }
-  }catch(err){$('auth-err').innerText=errMsg(err.code);$('auth-err').style.display='block';}
-  $('submit-btn').disabled=false;
-};
-
-window.logout=()=>signOut(auth);
-
-onAuthStateChanged(auth,user=>{
-  if(user){
-    currentUser=user;
-    $('auth-overlay').style.display='none';
-    $('main').style.display='block';
-    loadTournaments();
-    loadMyRegistrations();
-  }else{
-    currentUser=null;
-    $('auth-overlay').style.display='flex';
-    $('main').style.display='none';
+onAuthStateChanged(auth, user => {
+  if(user) {
+    document.getElementById('auth-overlay').style.display = 'none';
+    document.getElementById('main').style.display = 'block';
+  } else {
+    document.getElementById('auth-overlay').style.display = 'flex';
+    document.getElementById('main').style.display = 'none';
   }
 });
-
-// --- Tournaments ---
-function tStatus(t){
-  const now=Date.now();
-  const regClose=t.regCloseAt?.toMillis?.()||0;
-  const startAt=t.startAt?.toMillis?.()||0;
-  const filled=(t.registeredCount||0)>=t.maxSlots;
-  
-  // If tournament has started, it's closed
-  if(now>=startAt&&startAt>0)return{key:'closed',label:'Tournament Closed',cls:'s-closed'};
-  
-  // If slots are full, can't register
-  if(filled)return{key:'full',label:'Slots Full',cls:'s-full'};
-  
-  // If registration period has ended, registration is closed (but tournament not started yet)
-  if(now>=regClose&&regClose>0)return{key:'closed',label:'Registration Closed',cls:'s-closed'};
-  
-  // If registration hasn't started yet (more than 1 hour away)
-  if(now<regClose-3600000)return{key:'up',label:'Upcoming',cls:'s-up'};
-  
-  // Registration is actively happening
-  return{key:'live',label:'Live',cls:'s-live'};
-}
-
-const modeBadge={BR:'b-br',CS:'b-cs',LW:'b-lw'};
-const modeName={BR:'Battle Royale',CS:'Clash Squad',LW:'Lone Wolf'};
-
-function loadTournaments(){
-  onSnapshot(collection(db,'tournaments'),snap=>{
-    tournaments=[];
-    snap.forEach(d=>tournaments.push({id:d.id,...d.data()}));
-    tournaments.sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0));
-    renderTournaments();
-  });
-}
-
-function loadMyRegistrations(){
-  // Listen for current user's registrations across tournaments
-  // We use collectionGroup-like behavior via per-tournament checks; simpler: query each on render
-}
-
-function fmtDate(ts){
-  if(!ts?.toDate)return'';
-  return ts.toDate().toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-}
-
-function renderTournaments(){
-  const grid=$('t-grid');
-  if(!tournaments.length){
-    grid.innerHTML='<div class="empty" style="grid-column:1/-1"><h3>No Live Tournaments</h3><p>Check back soon for upcoming tournaments!</p></div>';
-    return;
-  }
-  grid.innerHTML=tournaments.map(t=>{
-    const st=tStatus(t);
-    const slots=`${t.registeredCount||0} / ${t.maxSlots}`;
-    const joined=userRegs[t.id];
-    const canJoin=st.key==='live'&&!joined;
-    return `<div class="card">
-      <div class="card-head">
-        <div><h3>${escapeHtml(t.title)}</h3><span class="badge ${modeBadge[t.mode]}">${modeName[t.mode]||t.mode}</span></div>
-        <span class="status ${st.cls}">${st.label}</span>
-      </div>
-      <div class="prize">
-        <span>Per Kill: <strong>${t.prizePerKill||0}</strong></span>
-        <span>Booyah: <strong>${t.prizeBooyah||0}</strong></span>
-      </div>
-      <div class="info"><span>Slots: ${slots}</span><span>Starts: ${fmtDate(t.startAt)}</span></div>
-      <div class="info" style="border-top:none;padding-top:0"><span>Reg. closes: ${fmtDate(t.regCloseAt)}</span></div>
-      <div class="card-actions">
-        <button class="btn btn-out" onclick="showRules('${t.id}')">Rules</button>
-        <button class="btn" ${canJoin?'':'disabled'} onclick="openJoin('${t.id}')">${joined?'Registered':'Join Now'}</button>
-      </div>
-    </div>`;
-  }).join('');
-  // Check user registrations
-  tournaments.forEach(async t=>{
-    if(!currentUser)return;
-    const q=query(collection(db,'tournaments',t.id,'registrations'),where('userId','==',currentUser.uid));
-    const snap=await getDocs(q);
-    if(!snap.empty&&!userRegs[t.id]){userRegs[t.id]=true;renderTournaments();}
-  });
-}
-
-function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-
-window.showRules=id=>{
-  const t=tournaments.find(x=>x.id===id);
-  if(!t)return;
-  const def='1. No hacks or unfair advantages of any kind.\n2. Any cheating leads to immediate disqualification.\n3. Be respectful to all participants.';
-  $('rules-content').innerText=t.rules||def;
-  $('rules-modal').classList.add('show');
-};
-
-let joinId=null;
-window.openJoin=id=>{
-  const t=tournaments.find(x=>x.id===id);
-  if(!t)return;
-  joinId=id;
-  $('jm-title').innerText='Register: '+t.title;
-  $('jm-sub').innerText=modeName[t.mode]+'  '+(t.registeredCount||0)+'/'+t.maxSlots+' slots filled';
-  $('jm-username').value='';$('jm-uid').value='';
-  $('jm-err').style.display='none';
-  $('join-modal').classList.add('show');
-};
-window.closeModal=id=>$(id).classList.remove('show');
-
-$('jm-submit').onclick=async()=>{
-  const u=$('jm-username').value.trim(),uid=$('jm-uid').value.trim();
-  if(!u||!uid){$('jm-err').innerText='Please fill both fields';$('jm-err').style.display='block';return;}
-  $('jm-submit').disabled=true;
-  try{
-    // Re-fetch tournament to check slots
-    const tRef=doc(db,'tournaments',joinId);
-    const tSnap=await getDoc(tRef);
-    if(!tSnap.exists()){throw new Error('Tournament no longer exists');}
-    const tData=tSnap.data();
-    if((tData.registeredCount||0)>=tData.maxSlots){throw new Error('Slots are full!');}
-    // Check duplicate
-    const dup=await getDocs(query(collection(db,'tournaments',joinId,'registrations'),where('userId','==',currentUser.uid)));
-    if(!dup.empty){throw new Error('You are already registered');}
-    // Add registration
-    await addDoc(collection(db,'tournaments',joinId,'registrations'),{
-      userId:currentUser.uid,
-      userEmail:currentUser.email,
-      inGameUsername:u,
-      gameUid:uid,
-      registeredAt:serverTimestamp()
-    });
-    // Increment count
-    await setDoc(tRef,{registeredCount:(tData.registeredCount||0)+1},{merge:true});
-    userRegs[joinId]=true;
-    closeModal('join-modal');
-    toast('Successfully registered!');
-    renderTournaments();
-  }catch(e){$('jm-err').innerText=e.message||'Registration failed';$('jm-err').style.display='block';}
-  $('jm-submit').disabled=false;
-};
 </script>
 </body>
 </html>
