@@ -33,6 +33,7 @@
         <input type="email" id="email" placeholder="Email">
         <input type="password" id="password" placeholder="Password">
         <button class="btn" id="auth-btn">Continue</button>
+        <p style="cursor:pointer;text-align:center;text-decoration:underline;margin-top:15px;font-size:0.9rem" id="toggle-auth">Create an account instead</p>
     </div>
 </div>
 
@@ -110,6 +111,13 @@
         }
     };
 
+    document.getElementById('toggle-auth').onclick = () => {
+        let isLogin = document.getElementById('auth-title').innerText === "Login";
+        document.getElementById('auth-title').innerText = isLogin ? "Sign Up" : "Login";
+        document.getElementById('auth-btn').innerText = isLogin ? "Register" : "Continue";
+        document.getElementById('toggle-auth').innerText = isLogin ? "Already have an account? Login" : "Create an account instead";
+    };
+
     window.loadProfile = async () => {
         const docRef = doc(db, "users", currentUser.uid);
         const docSnap = await getDoc(docRef);
@@ -118,7 +126,6 @@
         if (docSnap.exists() && docSnap.data().username) {
             currentDisplayName = docSnap.data().username;
         } else {
-            // Default to email prefix
             currentDisplayName = currentUser.email.split('@')[0];
         }
         
@@ -175,8 +182,13 @@
     window.deletePost = async (id) => { if(confirm("Delete this post?")) await deleteDoc(doc(db, "posts", id)); };
     window.logout = () => { signOut(auth); location.reload(); };
     document.getElementById('auth-btn').onclick = async () => {
-        try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } 
-        catch { await createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); }
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('password').value;
+        try { 
+            document.getElementById('auth-title').innerText === "Login" 
+                ? await signInWithEmailAndPassword(auth, email, pass) 
+                : await createUserWithEmailAndPassword(auth, email, pass); 
+        } catch(e) { alert(e.message); }
     };
 </script>
 </body>
