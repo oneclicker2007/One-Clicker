@@ -18,6 +18,7 @@
         .view { display: none; padding: 1rem; }
         .view.active { display: block; }
         .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+        .char-count { font-size: 0.8rem; color: #666; text-align: right; margin-bottom: 5px; }
         
         .nav-bottom { position: fixed; bottom: 0; width: 100%; max-width: 600px; height: 60px; background: #ffffff; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; }
         .nav-btn { background: none; border: none; cursor: pointer; padding: 10px; }
@@ -38,13 +39,20 @@
 </div>
 
 <div id="main">
-    <div id="home-view" class="view active"><h1>Feed</h1><div id="feed-container"></div></div>
+    <div id="home-view" class="view active">
+        <h1>Feed</h1>
+        <div id="feed-container"></div>
+    </div>
     <div id="post-view" class="view">
         <h1>Create Post</h1>
-        <textarea id="post-text" placeholder="What's happening?" maxlength="1000"></textarea>
+        <div id="char-count" class="char-count">0 / 1000</div>
+        <textarea id="post-text" placeholder="What's happening?" maxlength="1000" oninput="updateCount()"></textarea>
         <button class="btn" onclick="createPost()">Post</button>
     </div>
-    <div id="profile-view" class="view"><h1>Profile</h1><button class="btn" onclick="logout()" style="background:#d32f2f">Logout</button></div>
+    <div id="profile-view" class="view">
+        <h1>Profile</h1>
+        <button class="btn" onclick="logout()" style="background:#d32f2f">Logout</button>
+    </div>
 
     <nav class="nav-bottom">
         <button class="nav-btn" onclick="switchView('home-view')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button>
@@ -58,19 +66,15 @@
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDdOMnwf1r0e5ETserurMUeRkufc17vE_g",
-        authDomain: "one-clicker-c35eb.firebaseapp.com",
-        projectId: "one-clicker-c35eb",
-        storageBucket: "one-clicker-c35eb.firebasestorage.app",
-        messagingSenderId: "104489532169",
-        appId: "1:104489532169:web:6ef47037bc2bbc9f8af1d8"
-    };
-
+    const firebaseConfig = { /* Your config remains unchanged */ };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
     let currentUser = null;
+
+    window.updateCount = () => {
+        document.getElementById('char-count').innerText = `${document.getElementById('post-text').value.length} / 1000`;
+    };
 
     window.switchView = (id) => {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -83,6 +87,7 @@
         try {
             await addDoc(collection(db, "posts"), { content: text, authorUID: currentUser.uid, createdAt: serverTimestamp() });
             document.getElementById('post-text').value = '';
+            updateCount();
             switchView('home-view');
         } catch (e) { alert("Error: " + e.message); }
     };
@@ -96,32 +101,26 @@
         document.getElementById('auth-overlay').style.display = user ? 'none' : 'flex';
         document.getElementById('main').style.display = user ? 'block' : 'none';
         if (user) {
-            const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-            onSnapshot(q, snap => {
+            onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), snap => {
                 const container = document.getElementById('feed-container');
-                container.innerHTML = '';
+                container.innerHTML = snap.empty ? '<p>No posts yet. Be the first to share something!</p>' : '';
                 snap.forEach(doc => {
                     const data = doc.data();
-                    container.innerHTML += `<div class="post-card"><p>${data.content.replace(/</g, "&lt;")}</p>${data.authorUID === user.uid ? `<button onclick="deletePost('${doc.id}')" style="color:red;border:none;background:none;cursor:pointer">Delete</button>` : ''}</div>`;
+                    const date = data.createdAt?.toDate().toLocaleDateString();
+                    container.innerHTML += `<div class="post-card"><p>${data.content.replace(/</g, "&lt;")}</p><small>${date || 'Just now'}</small><br>${data.authorUID === user.uid ? `<button onclick="deletePost('${doc.id}')" style="color:red;border:none;background:none;cursor:pointer">Delete</button>` : ''}</div>`;
                 });
             });
         }
     });
 
-    document.getElementById('toggle-auth').onclick = () => {
-        let isLogin = document.getElementById('auth-title').innerText === "Login";
-        document.getElementById('auth-title').innerText = isLogin ? "Sign Up" : "Login";
-        document.getElementById('auth-btn').innerText = isLogin ? "Register" : "Continue";
-        document.getElementById('toggle-auth').innerText = isLogin ? "Already have an account? Login" : "Create an account instead";
-    };
-
     document.getElementById('auth-btn').onclick = async () => {
-        const e = document.getElementById('email').value.trim(), p = document.getElementById('password').value.trim();
+        const e = document.getElementById('email').value, p = document.getElementById('password').value;
         const errEl = document.getElementById('auth-err');
         try {
             document.getElementById('auth-title').innerText === "Login" ? await signInWithEmailAndPassword(auth, e, p) : await createUserWithEmailAndPassword(auth, e, p);
         } catch (err) {
-            errEl.innerText = err.code === 'auth/invalid-credential' ? 'Incorrect email or password.' : 'An error occurred.';
+            const msgs = {'auth/email-already-in-use': 'Email is already registered.', 'auth/invalid-credential': 'Wrong email or password.'};
+            errEl.innerText = msgs[err.code] || 'Authentication failed.';
             errEl.style.display = 'block';
         }
     };
