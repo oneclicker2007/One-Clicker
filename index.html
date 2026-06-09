@@ -3,17 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Social Platform</title>
+<title>Social Platform | Connect</title>
 <style>
     :root { --bg: #ffffff; --text: #0a192f; --primary: #000000; --border: #e3e8ef; --card: #ffffff; }
-    body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
-    
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
     #auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 1rem; }
     .auth-box { width: 100%; max-width: 400px; padding: 2rem; border: 1px solid var(--border); border-radius: 12px; }
     input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
     .btn { width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; }
-    .err { color: #d32f2f; font-size: 0.85rem; margin-bottom: 10px; display: none; }
-
+    .err { color: #d32f2f; font-size: 0.85rem; margin-bottom: 10px; display: none; font-weight: 500; }
     #main { display: none; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
     .view { display: none; padding: 1rem; }
     .view.active { display: block; }
@@ -31,12 +29,12 @@
         <input type="email" id="email" placeholder="Email">
         <input type="password" id="password" placeholder="Password">
         <button class="btn" id="auth-btn">Continue</button>
-        <p style="cursor:pointer;text-align:center;text-decoration:underline;margin-top:15px" id="toggle-auth">Create an account instead</p>
+        <p style="cursor:pointer;text-align:center;text-decoration:underline;margin-top:15px;font-size:0.9rem" id="toggle-auth">Create an account instead</p>
     </div>
 </div>
 
 <div id="main">
-    <div id="home-view" class="view active"><h1>Feed</h1><p>Welcome to your feed.</p></div>
+    <div id="home-view" class="view active"><h1>Feed</h1></div>
     <div id="post-view" class="view"><h1>Create Post</h1></div>
     <div id="profile-view" class="view">
         <h1>Profile</h1>
@@ -65,38 +63,47 @@
 
     const auth = getAuth(initializeApp(firebaseConfig));
     let isLogin = true;
+    const errEl = document.getElementById('auth-err');
 
-    // View Switching
     window.switchView = (id) => {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     };
 
-    // Auth Toggle
     document.getElementById('toggle-auth').onclick = () => {
         isLogin = !isLogin;
+        errEl.style.display = 'none';
         document.getElementById('auth-title').innerText = isLogin ? "Login" : "Sign Up";
         document.getElementById('auth-btn').innerText = isLogin ? "Continue" : "Register";
         document.getElementById('toggle-auth').innerText = isLogin ? "Create an account instead" : "Already have an account? Login";
     };
 
-    // Auth Action
     document.getElementById('auth-btn').onclick = async () => {
         const e = document.getElementById('email').value.trim();
-        const p = document.getElementById('password').value;
-        const errEl = document.getElementById('auth-err');
+        const p = document.getElementById('password').value.trim();
+        
+        if (!e || !p) {
+            errEl.innerText = "Please fill in all fields.";
+            errEl.style.display = 'block';
+            return;
+        }
+
         try {
             if (isLogin) await signInWithEmailAndPassword(auth, e, p);
             else await createUserWithEmailAndPassword(auth, e, p);
         } catch (err) {
-            errEl.innerText = err.code === 'auth/invalid-credential' ? 'Incorrect email or password' : 
-                              err.code === 'auth/email-already-in-use' ? 'Account already exists' : err.message;
+            let msg = "An error occurred. Please try again.";
+            if (err.code === 'auth/invalid-credential') msg = "Incorrect email or password.";
+            else if (err.code === 'auth/email-already-in-use') msg = "An account with this email already exists.";
+            else if (err.code === 'auth/invalid-email') msg = "Please enter a valid email address.";
+            else if (err.code === 'auth/weak-password') msg = "Password must be at least 6 characters.";
+            
+            errEl.innerText = msg;
             errEl.style.display = 'block';
         }
     };
 
     window.logout = () => signOut(auth);
-
     onAuthStateChanged(auth, user => {
         document.getElementById('auth-overlay').style.display = user ? 'none' : 'flex';
         document.getElementById('main').style.display = user ? 'block' : 'none';
