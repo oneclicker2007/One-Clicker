@@ -7,16 +7,19 @@
     <style>
         :root { --bg: #ffffff; --text: #0a192f; --border: #e3e8ef; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
+        
         #auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 1rem; }
         .auth-box { width: 100%; max-width: 400px; padding: 2rem; border: 1px solid var(--border); border-radius: 12px; }
         input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
         .btn { width: 100%; padding: 12px; background: #000; color: #fff; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; }
         .err { color: #d32f2f; font-size: 0.85rem; margin-bottom: 10px; display: none; font-weight: 500; }
+        
         #main { display: none; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
         .view { display: none; padding: 1rem; }
         .view.active { display: block; }
         .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
         .char-count { font-size: 0.8rem; color: #666; text-align: right; margin-bottom: 5px; }
+        
         .nav-bottom { position: fixed; bottom: 0; width: 100%; max-width: 600px; height: 60px; background: #ffffff; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; }
         .nav-btn { background: none; border: none; cursor: pointer; padding: 10px; }
         .nav-btn svg { width: 28px; height: 28px; fill: #000000; }
@@ -85,7 +88,7 @@
         } catch (e) { alert("Error: " + e.message); }
     };
 
-    window.deletePost = async (id) => { if(confirm("Delete?")) await deleteDoc(doc(db, "posts", id)); };
+    window.deletePost = async (id) => { if(confirm("Delete this post?")) await deleteDoc(doc(db, "posts", id)); };
 
     onAuthStateChanged(auth, user => {
         currentUser = user;
@@ -94,7 +97,7 @@
         if (user) {
             onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), snap => {
                 const container = document.getElementById('feed-container');
-                container.innerHTML = snap.empty ? '<p>No posts yet.</p>' : '';
+                container.innerHTML = snap.empty ? '<p>No posts yet. Be the first to share something!</p>' : '';
                 snap.forEach(doc => {
                     const data = doc.data();
                     container.innerHTML += `<div class="post-card"><p>${data.content.replace(/</g, "&lt;")}</p><small>${data.createdAt ? data.createdAt.toDate().toLocaleDateString() : 'Just now'}</small><br>${data.authorUID === user.uid ? `<button onclick="deletePost('${doc.id}')" style="color:red;border:none;background:none;cursor:pointer">Delete</button>` : ''}</div>`;
@@ -103,10 +106,31 @@
         }
     });
 
+    document.getElementById('toggle-auth').onclick = () => {
+        let isLogin = document.getElementById('auth-title').innerText === "Login";
+        document.getElementById('auth-title').innerText = isLogin ? "Sign Up" : "Login";
+        document.getElementById('auth-btn').innerText = isLogin ? "Register" : "Continue";
+        document.getElementById('toggle-auth').innerText = isLogin ? "Already have an account? Login" : "Create an account instead";
+    };
+
     document.getElementById('auth-btn').onclick = async () => {
-        const e = document.getElementById('email').value, p = document.getElementById('password').value, errEl = document.getElementById('auth-err');
-        try { document.getElementById('auth-title').innerText === "Login" ? await signInWithEmailAndPassword(auth, e, p) : await createUserWithEmailAndPassword(auth, e, p); }
-        catch (err) { errEl.innerText = "Auth failed: " + err.code; errEl.style.display = 'block'; }
+        const e = document.getElementById('email').value.trim(), p = document.getElementById('password').value.trim();
+        const errEl = document.getElementById('auth-err');
+        errEl.style.display = 'none';
+        try {
+            document.getElementById('auth-title').innerText === "Login" 
+                ? await signInWithEmailAndPassword(auth, e, p) 
+                : await createUserWithEmailAndPassword(auth, e, p);
+        } catch (err) {
+            const errorMessages = {
+                'auth/invalid-credential': 'Incorrect email or password.',
+                'auth/email-already-in-use': 'Email is already registered.',
+                'auth/weak-password': 'Password should be at least 6 characters.',
+                'auth/invalid-email': 'Invalid email address.'
+            };
+            errEl.innerText = errorMessages[err.code] || 'An error occurred: ' + err.code;
+            errEl.style.display = 'block';
+        }
     };
     window.logout = () => signOut(auth);
 </script>
