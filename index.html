@@ -3,83 +3,104 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Social Platform | Connect</title>
+<title>Social Platform</title>
 <style>
-:root { --bg: #ffffff; --text: #0a192f; --primary: #000000; --border: #e3e8ef; --card: #ffffff; }
-[data-theme="dark"] { --bg: #0f1419; --text: #e6e6e6; --primary: #ffffff; --border: #2d3748; --card: #1a202c; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; }
+    :root { --bg: #ffffff; --text: #0a192f; --primary: #000000; --border: #e3e8ef; --card: #ffffff; }
+    body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
+    
+    #auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 1rem; }
+    .auth-box { width: 100%; max-width: 400px; padding: 2rem; border: 1px solid var(--border); border-radius: 12px; }
+    input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
+    .btn { width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; }
+    .err { color: #d32f2f; font-size: 0.85rem; margin-bottom: 10px; display: none; }
 
-#auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 1rem; }
-.auth-box { background: var(--card); padding: 2rem; border-radius: 12px; width: 100%; max-width: 400px; border: 1px solid var(--border); }
-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); }
-.btn { width: 100%; padding: 12px; background: var(--primary); color: var(--bg); border: none; cursor: pointer; font-weight: 600; border-radius: 6px; }
-.err { color: #d32f2f; font-size: 0.85rem; margin-bottom: 10px; display: none; }
-
-#main { display: none; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
-.view { display: none; padding: 1rem; }
-.view.active { display: block; }
-.nav-bottom { position: fixed; bottom: 0; width: 100%; max-width: 600px; height: 60px; background: var(--card); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; }
-.nav-btn { background: none; border: none; cursor: pointer; padding: 10px; }
-.nav-btn svg { width: 24px; height: 24px; fill: var(--text); }
+    #main { display: none; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
+    .view { display: none; padding: 1rem; }
+    .view.active { display: block; }
+    .nav-bottom { position: fixed; bottom: 0; width: 100%; max-width: 600px; height: 60px; background: #fff; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; }
+    .nav-btn { background: none; border: none; cursor: pointer; padding: 10px; }
+    .nav-btn svg { width: 24px; height: 24px; }
 </style>
 </head>
 <body>
 
 <div id="auth-overlay">
-  <div class="auth-box">
-    <h2 id="auth-title">Login</h2>
-    <div id="auth-err" class="err"></div>
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button class="btn" id="auth-btn">Continue</button>
-    <p style="cursor:pointer;text-align:center;text-decoration:underline" id="toggle-auth">Create an account instead</p>
-  </div>
+    <div class="auth-box">
+        <h2 id="auth-title">Login</h2>
+        <div id="auth-err" class="err"></div>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button class="btn" id="auth-btn">Continue</button>
+        <p style="cursor:pointer;text-align:center;text-decoration:underline;margin-top:15px" id="toggle-auth">Create an account instead</p>
+    </div>
 </div>
 
 <div id="main">
-  <div id="home-view" class="view active"><h1>Feed</h1><p>Thoughts and problems.</p></div>
-  <div id="post-view" class="view"><h1>Create Post</h1></div>
-  <div id="profile-view" class="view">
-    <h1>Profile</h1>
-    <button class="btn" onclick="logout()" style="background:#d32f2f">Logout</button>
-  </div>
+    <div id="home-view" class="view active"><h1>Feed</h1><p>Welcome to your feed.</p></div>
+    <div id="post-view" class="view"><h1>Create Post</h1></div>
+    <div id="profile-view" class="view">
+        <h1>Profile</h1>
+        <button class="btn" onclick="logout()" style="background:#d32f2f">Logout</button>
+    </div>
 
-  <div class="nav-bottom">
-    <button class="nav-btn" onclick="switchView('home-view')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button>
-    <button class="nav-btn" onclick="switchView('post-view')"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
-    <button class="nav-btn" onclick="switchView('profile-view')"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button>
-  </div>
+    <nav class="nav-bottom">
+        <button class="nav-btn" onclick="switchView('home-view')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button>
+        <button class="nav-btn" onclick="switchView('post-view')"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
+        <button class="nav-btn" onclick="switchView('profile-view')"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button>
+    </nav>
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const firebaseConfig = { /* Paste your Config Here */ };
-const auth = getAuth(initializeApp(firebaseConfig));
+    const firebaseConfig = {
+        apiKey: "AIzaSyDdOMnwf1r0e5ETserurMUeRkufc17vE_g",
+        authDomain: "one-clicker-c35eb.firebaseapp.com",
+        projectId: "one-clicker-c35eb",
+        storageBucket: "one-clicker-c35eb.firebasestorage.app",
+        messagingSenderId: "104489532169",
+        appId: "1:104489532169:web:6ef47037bc2bbc9f8af1d8"
+    };
 
-window.switchView = (id) => {
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-};
+    const auth = getAuth(initializeApp(firebaseConfig));
+    let isLogin = true;
 
-document.getElementById('auth-btn').onclick = async () => {
-    const e = document.getElementById('email').value, p = document.getElementById('password').value;
-    const errEl = document.getElementById('auth-err');
-    try {
-        isLogin ? await signInWithEmailAndPassword(auth, e, p) : await createUserWithEmailAndPassword(auth, e, p);
-    } catch (err) {
-        errEl.innerText = err.code === 'auth/invalid-credential' ? 'Incorrect email or password' : 
-                          err.code === 'auth/email-already-in-use' ? 'Account already exists' : err.message;
-        errEl.style.display = 'block';
-    }
-};
+    // View Switching
+    window.switchView = (id) => {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    };
 
-window.logout = () => signOut(auth);
-onAuthStateChanged(auth, user => {
-    document.getElementById('auth-overlay').style.display = user ? 'none' : 'flex';
-    document.getElementById('main').style.display = user ? 'block' : 'none';
-});
+    // Auth Toggle
+    document.getElementById('toggle-auth').onclick = () => {
+        isLogin = !isLogin;
+        document.getElementById('auth-title').innerText = isLogin ? "Login" : "Sign Up";
+        document.getElementById('auth-btn').innerText = isLogin ? "Continue" : "Register";
+        document.getElementById('toggle-auth').innerText = isLogin ? "Create an account instead" : "Already have an account? Login";
+    };
+
+    // Auth Action
+    document.getElementById('auth-btn').onclick = async () => {
+        const e = document.getElementById('email').value.trim();
+        const p = document.getElementById('password').value;
+        const errEl = document.getElementById('auth-err');
+        try {
+            if (isLogin) await signInWithEmailAndPassword(auth, e, p);
+            else await createUserWithEmailAndPassword(auth, e, p);
+        } catch (err) {
+            errEl.innerText = err.code === 'auth/invalid-credential' ? 'Incorrect email or password' : 
+                              err.code === 'auth/email-already-in-use' ? 'Account already exists' : err.message;
+            errEl.style.display = 'block';
+        }
+    };
+
+    window.logout = () => signOut(auth);
+
+    onAuthStateChanged(auth, user => {
+        document.getElementById('auth-overlay').style.display = user ? 'none' : 'flex';
+        document.getElementById('main').style.display = user ? 'block' : 'none';
+    });
 </script>
 </body>
 </html>
