@@ -1,64 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Social Platform</title>
-<style>
-:root{--primary:#0062ff;--bg:#f8fbff;--card:#fff;--border:#e3e8ef;--text:#0a192f}
-[data-theme="dark"]{--bg:#0f1419;--card:#1a202c;--border:#2d3748;--text:#e6e6e6}
-body{font-family:sans-serif;margin:0;background:var(--bg);color:var(--text)}
-#auth-overlay{position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;justify-content:center;align-items:center;padding:1rem}
-.auth-box{background:var(--card);padding:2rem;border-radius:12px;width:100%;max-width:350px}
-.btn{background:var(--primary);color:#fff;padding:.8rem;border:none;border-radius:6px;width:100%;cursor:pointer}
-#main{display:none;padding-bottom:80px}
-.feed{padding:1rem;max-width:600px;margin:0 auto}
-.post-card{background:var(--card);padding:1rem;border:1px solid var(--border);border-radius:8px;margin-bottom:1rem}
-.nav-bottom{position:fixed;bottom:0;width:100%;background:var(--card);display:flex;border-top:1px solid var(--border);height:60px}
-.nav-btn{flex:1;border:none;background:none;cursor:pointer;border-right:1px solid var(--border)}
-.nav-btn:last-child{border-right:none}
-.nav-btn:hover{background:var(--bg)}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Platform | Connect</title>
+    <style>
+        :root { --bg: #ffffff; --text: #1a1a1a; --primary: #000000; --accent: #f0f0f0; }
+        [data-theme="dark"] { --bg: #121212; --text: #ffffff; --primary: #ffffff; --accent: #1e1e1e; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; transition: background 0.3s; }
+        
+        /* Auth Overlay */
+        #auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .auth-box { width: 100%; max-width: 350px; }
+        .auth-box h2 { margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; background: var(--bg); color: var(--text); }
+        .btn { width: 100%; padding: 12px; background: var(--primary); color: var(--bg); border: none; cursor: pointer; font-weight: bold; }
+        .toggle-text { margin-top: 15px; font-size: 0.9rem; cursor: pointer; text-decoration: underline; }
+
+        /* Main App */
+        #main { display: none; padding: 20px; }
+        .nav-bottom { position: fixed; bottom: 0; width: 100%; height: 60px; background: var(--bg); border-top: 1px solid #ccc; display: flex; }
+        .nav-btn { flex: 1; border: none; background: var(--bg); cursor: pointer; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; border-right: 1px solid #eee; }
+        .nav-btn:last-child { border-right: none; }
+    </style>
 </head>
 <body>
 
 <div id="auth-overlay">
-  <div class="auth-box">
-    <h2>Social Login</h2>
-    <input type="email" id="email" style="width:100%;margin-bottom:10px" placeholder="Email">
-    <input type="password" id="password" style="width:100%;margin-bottom:10px" placeholder="Password">
-    <button class="btn" id="submit-btn">Login</button>
-  </div>
+    <div class="auth-box">
+        <h2 id="auth-title">Login</h2>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button class="btn" id="auth-btn">Continue</button>
+        <p class="toggle-text" id="toggle-auth">Create an account instead</p>
+    </div>
 </div>
 
 <div id="main">
-  <div class="feed" id="feed"></div>
-  <div class="nav-bottom">
-    <button class="nav-btn" onclick="showHome()">Home</button>
-    <button class="nav-btn" onclick="showPost()">Post</button>
-    <button class="nav-btn" onclick="showProfile()">Profile</button>
-  </div>
+    <div id="content-area"><h1>Feed</h1></div>
+    <div class="nav-bottom">
+        <button class="nav-btn">Home</button>
+        <button class="nav-btn">Create Post</button>
+        <button class="nav-btn">Profile</button>
+    </div>
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-// Initialize with your Firebase Config
-const app = initializeApp({...});
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-onAuthStateChanged(auth, user => {
-  if(user) {
-    document.getElementById('auth-overlay').style.display = 'none';
-    document.getElementById('main').style.display = 'block';
-  } else {
-    document.getElementById('auth-overlay').style.display = 'flex';
-    document.getElementById('main').style.display = 'none';
-  }
-});
+    // Add logic here to handle toggle between Login/Signup and Auth state
 </script>
 </body>
 </html>
