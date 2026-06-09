@@ -52,7 +52,7 @@
                 <svg class="pencil-icon" onclick="toggleEdit()" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
             </div>
             <div id="edit-section">
-                <input type="text" id="username-input" maxlength="20" placeholder="Enter name (max 20 chars)">
+                <input type="text" id="username-input" maxlength="20">
                 <button class="btn" onclick="updateProfile()">Save</button>
             </div>
             <button class="btn" onclick="logout()" style="background:#d32f2f; margin-top: 20px;">Logout</button>
@@ -85,6 +85,7 @@
     const db = getFirestore(app);
     let currentUser = null;
     let currentDisplayName = "";
+    let placeholderInterval = null;
 
     window.switchView = (id) => {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -93,7 +94,20 @@
 
     window.toggleEdit = () => {
         const editSec = document.getElementById('edit-section');
-        editSec.style.display = editSec.style.display === 'block' ? 'none' : 'block';
+        const isHidden = editSec.style.display !== 'block';
+        editSec.style.display = isHidden ? 'block' : 'none';
+        
+        if (isHidden) {
+            const examples = ["Maria", "Rahul", "Shiva"];
+            let i = 0;
+            const input = document.getElementById('username-input');
+            placeholderInterval = setInterval(() => {
+                input.placeholder = `e.g. ${examples[i]}`;
+                i = (i + 1) % examples.length;
+            }, 1500);
+        } else {
+            clearInterval(placeholderInterval);
+        }
     };
 
     window.loadProfile = async () => {
@@ -104,8 +118,8 @@
         if (docSnap.exists() && docSnap.data().username) {
             currentDisplayName = docSnap.data().username;
         } else {
-            const defaults = ["Maria", "Rahul", "Shiva"];
-            currentDisplayName = defaults[Math.floor(Math.random() * defaults.length)];
+            // Default to email prefix
+            currentDisplayName = currentUser.email.split('@')[0];
         }
         
         document.getElementById('name-text').innerText = currentDisplayName;
@@ -118,6 +132,7 @@
         await setDoc(doc(db, "users", currentUser.uid), { username }, { merge: true });
         currentDisplayName = username;
         document.getElementById('name-text').innerText = currentDisplayName;
+        clearInterval(placeholderInterval);
         toggleEdit();
         alert("Name saved!");
     };
