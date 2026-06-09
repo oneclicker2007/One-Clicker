@@ -6,24 +6,32 @@
     <title>Social Platform | Connect</title>
     <style>
         :root { --bg: #ffffff; --text: #0a192f; --border: #e3e8ef; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
+        [data-theme="dark"] { --bg: #0a192f; --text: #ffffff; --border: #1f2d40; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; transition: background 0.3s, color 0.3s; }
         #auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 1rem; }
         .auth-box { width: 100%; max-width: 400px; padding: 2rem; border: 1px solid var(--border); border-radius: 12px; }
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; background: var(--bg); color: var(--text); }
         .btn { width: 100%; padding: 12px; background: #000; color: #fff; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; }
         .err-msg { color: #d32f2f; font-size: 0.85rem; margin-bottom: 10px; display: none; font-weight: 500; text-align: center; }
         .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
-        .post-author { font-size: 0.8rem; font-weight: bold; color: #555; margin-bottom: 5px; }
-        .profile-container { padding: 1rem; text-align: center; }
+        .post-author { font-size: 0.8rem; font-weight: bold; color: #777; margin-bottom: 5px; }
+        .profile-container, .settings-container { padding: 1rem; text-align: center; }
         .name-display { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 15px 0; font-size: 1.2rem; font-weight: bold; }
         #edit-section { display: none; margin-top: 10px; }
-        .pencil-icon { cursor: pointer; width: 20px; height: 20px; fill: #555; }
+        .pencil-icon { cursor: pointer; width: 20px; height: 20px; fill: var(--text); }
         #main { display: none; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
         .view { display: none; padding: 1rem; }
         .view.active { display: block; }
-        .nav-bottom { position: fixed; bottom: 0; width: 100%; max-width: 600px; height: 60px; background: #ffffff; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; }
+        .nav-bottom { position: fixed; bottom: 0; width: 100%; max-width: 600px; height: 60px; background: var(--bg); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; }
         .nav-btn { background: none; border: none; cursor: pointer; padding: 10px; }
-        .nav-btn svg { width: 28px; height: 28px; fill: #000000; }
+        .nav-btn svg { width: 28px; height: 28px; fill: var(--text); }
+        .toggle-container { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 20px 0; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 24px; transition: 0.4s; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.4s; }
+        input:checked + .slider { background-color: #000; }
+        input:checked + .slider:before { transform: translateX(26px); }
     </style>
 </head>
 <body>
@@ -61,11 +69,24 @@
             <button class="btn" onclick="logout()" style="background:#d32f2f; margin-top: 20px;">Logout</button>
         </div>
     </div>
+    <div id="settings-view" class="view">
+        <div class="settings-container">
+            <h1>Settings</h1>
+            <div class="toggle-container">
+                <span>Dark Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-toggle" onchange="toggleTheme()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
 
     <nav class="nav-bottom">
         <button class="nav-btn" onclick="switchView('home-view')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button>
         <button class="nav-btn" onclick="switchView('post-view')"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
         <button class="nav-btn" onclick="loadProfile(); switchView('profile-view')"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button>
+        <button class="nav-btn" onclick="switchView('settings-view')"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.63l-1.92-3.33c-.12-.22-.38-.31-.61-.22l-2.38.96c-.5-.38-1.03-.7-1.6-.96l-.36-2.54c-.04-.24-.24-.42-.48-.42h-3.84c-.24 0-.43.18-.47.42l-.36 2.54c-.57.26-1.1.58-1.6.96l-2.38-.96c-.22-.09-.48 0-.61.22l-1.92 3.33c-.11.22-.06.49.12.63l2.02 1.58c-.05.3-.07.62-.07.94 0 .33.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.63l1.92 3.33c.12.22.38.31.61.22l2.38-.96c.5.38 1.03.7 1.6.96l.36 2.54c.04.24.24.42.48.42h3.84c.24 0 .43-.18.47-.42l.36-2.54c.57-.26 1.1-.58 1.6-.96l2.38.96c.22.09.48 0 .61-.22l1.92-3.33c.11-.22.06-.49-.12-.63l-2.03-1.58zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg></button>
     </nav>
 </div>
 
@@ -87,6 +108,18 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     let currentUser = null, currentDisplayName = "", placeholderInterval = null;
+
+    // Theme initialization
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-toggle').checked = (savedTheme === 'dark');
+
+    window.toggleTheme = () => {
+        const isDark = document.getElementById('theme-toggle').checked;
+        const theme = isDark ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+    };
 
     window.switchView = (id) => {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
