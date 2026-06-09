@@ -14,7 +14,8 @@
         .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
         .post-author { font-size: 0.8rem; font-weight: bold; color: #555; margin-bottom: 5px; }
         .profile-container { padding: 1rem; text-align: center; }
-        .name-wrapper { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 15px 0; }
+        .name-display { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 15px 0; font-size: 1.2rem; font-weight: bold; }
+        #edit-section { display: none; margin-top: 10px; }
         .pencil-icon { cursor: pointer; width: 20px; height: 20px; fill: #555; }
         #main { display: none; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
         .view { display: none; padding: 1rem; }
@@ -46,11 +47,15 @@
         <div class="profile-container">
             <h1>Profile</h1>
             <p><strong>Account ID:</strong> <span id="display-uid"></span></p>
-            <div class="name-wrapper">
-                <input type="text" id="username-input" style="width: auto;">
-                <svg class="pencil-icon" onclick="updateProfile()" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+            <div class="name-display">
+                <span id="name-text"></span>
+                <svg class="pencil-icon" onclick="toggleEdit()" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
             </div>
-            <button class="btn" onclick="logout()" style="background:#d32f2f">Logout</button>
+            <div id="edit-section">
+                <input type="text" id="username-input" maxlength="20" placeholder="Enter name (max 20 chars)">
+                <button class="btn" onclick="updateProfile()">Save</button>
+            </div>
+            <button class="btn" onclick="logout()" style="background:#d32f2f; margin-top: 20px;">Logout</button>
         </div>
     </div>
 
@@ -86,19 +91,35 @@
         document.getElementById(id).classList.add('active');
     };
 
+    window.toggleEdit = () => {
+        const editSec = document.getElementById('edit-section');
+        editSec.style.display = editSec.style.display === 'block' ? 'none' : 'block';
+    };
+
     window.loadProfile = async () => {
         const docRef = doc(db, "users", currentUser.uid);
         const docSnap = await getDoc(docRef);
         document.getElementById('display-uid').innerText = currentUser.uid;
-        currentDisplayName = docSnap.exists() && docSnap.data().username ? docSnap.data().username : currentUser.uid.substring(0, 8);
+        
+        if (docSnap.exists() && docSnap.data().username) {
+            currentDisplayName = docSnap.data().username;
+        } else {
+            const defaults = ["Maria", "Rahul", "Shiva"];
+            currentDisplayName = defaults[Math.floor(Math.random() * defaults.length)];
+        }
+        
+        document.getElementById('name-text').innerText = currentDisplayName;
         document.getElementById('username-input').value = currentDisplayName;
     };
 
     window.updateProfile = async () => {
         const username = document.getElementById('username-input').value.trim();
+        if(!username) return;
         await setDoc(doc(db, "users", currentUser.uid), { username }, { merge: true });
         currentDisplayName = username;
-        alert("Name updated!");
+        document.getElementById('name-text').innerText = currentDisplayName;
+        toggleEdit();
+        alert("Name saved!");
     };
 
     window.createPost = async () => {
