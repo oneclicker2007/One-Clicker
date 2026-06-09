@@ -11,6 +11,7 @@
         .auth-box { width: 100%; max-width: 400px; padding: 2rem; border: 1px solid var(--border); border-radius: 12px; }
         input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
         .btn { width: 100%; padding: 12px; background: #000; color: #fff; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; }
+        .err-msg { color: #d32f2f; font-size: 0.85rem; margin-bottom: 10px; display: none; font-weight: 500; text-align: center; }
         .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
         .post-author { font-size: 0.8rem; font-weight: bold; color: #555; margin-bottom: 5px; }
         .profile-container { padding: 1rem; text-align: center; }
@@ -30,6 +31,7 @@
 <div id="auth-overlay">
     <div class="auth-box">
         <h2 id="auth-title">Login</h2>
+        <div id="auth-err" class="err-msg"></div>
         <input type="email" id="email" placeholder="Email">
         <input type="password" id="password" placeholder="Password">
         <button class="btn" id="auth-btn">Continue</button>
@@ -84,31 +86,28 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    let currentUser = null;
-    let currentDisplayName = "";
-    let placeholderInterval = null;
+    let currentUser = null, currentDisplayName = "", placeholderInterval = null;
 
     window.switchView = (id) => {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     };
 
+    const showError = (msg) => {
+        const errEl = document.getElementById('auth-err');
+        errEl.innerText = msg;
+        errEl.style.display = 'block';
+    };
+
     window.toggleEdit = () => {
         const editSec = document.getElementById('edit-section');
         const isHidden = editSec.style.display !== 'block';
         editSec.style.display = isHidden ? 'block' : 'none';
-        
         if (isHidden) {
             const examples = ["Maria", "Rahul", "Shiva"];
             let i = 0;
-            const input = document.getElementById('username-input');
-            placeholderInterval = setInterval(() => {
-                input.placeholder = `e.g. ${examples[i]}`;
-                i = (i + 1) % examples.length;
-            }, 1500);
-        } else {
-            clearInterval(placeholderInterval);
-        }
+            placeholderInterval = setInterval(() => { document.getElementById('username-input').placeholder = `e.g. ${examples[i]}`; i = (i + 1) % examples.length; }, 1500);
+        } else { clearInterval(placeholderInterval); }
     };
 
     document.getElementById('toggle-auth').onclick = () => {
@@ -116,19 +115,14 @@
         document.getElementById('auth-title').innerText = isLogin ? "Sign Up" : "Login";
         document.getElementById('auth-btn').innerText = isLogin ? "Register" : "Continue";
         document.getElementById('toggle-auth').innerText = isLogin ? "Already have an account? Login" : "Create an account instead";
+        document.getElementById('auth-err').style.display = 'none';
     };
 
     window.loadProfile = async () => {
         const docRef = doc(db, "users", currentUser.uid);
         const docSnap = await getDoc(docRef);
         document.getElementById('display-uid').innerText = currentUser.uid;
-        
-        if (docSnap.exists() && docSnap.data().username) {
-            currentDisplayName = docSnap.data().username;
-        } else {
-            currentDisplayName = currentUser.email.split('@')[0];
-        }
-        
+        currentDisplayName = (docSnap.exists() && docSnap.data().username) ? docSnap.data().username : currentUser.email.split('@')[0];
         document.getElementById('name-text').innerText = currentDisplayName;
         document.getElementById('username-input').value = currentDisplayName;
     };
@@ -141,18 +135,12 @@
         document.getElementById('name-text').innerText = currentDisplayName;
         clearInterval(placeholderInterval);
         toggleEdit();
-        alert("Name saved!");
     };
 
     window.createPost = async () => {
         const text = document.getElementById('post-text').value.trim();
         if (!text) return;
-        await addDoc(collection(db, "posts"), { 
-            content: text, 
-            authorUID: currentUser.uid, 
-            authorName: currentDisplayName, 
-            createdAt: serverTimestamp() 
-        });
+        await addDoc(collection(db, "posts"), { content: text, authorUID: currentUser.uid, authorName: currentDisplayName, createdAt: serverTimestamp() });
         document.getElementById('post-text').value = '';
         switchView('home-view');
     };
@@ -169,11 +157,7 @@
                 container.innerHTML = '';
                 snap.forEach(doc => {
                     const data = doc.data();
-                    container.innerHTML += `<div class="post-card">
-                        <div class="post-author">${data.authorName || 'Anonymous'}</div>
-                        <p>${data.content.replace(/</g, "&lt;")}</p>
-                        ${data.authorUID === user.uid ? `<button onclick="deletePost('${doc.id}')" style="color:red;border:none;background:none;cursor:pointer">Delete</button>` : ''}
-                    </div>`;
+                    container.innerHTML += `<div class="post-card"><div class="post-author">${data.authorName || 'Anonymous'}</div><p>${data.content.replace(/</g, "&lt;")}</p>${data.authorUID === user.uid ? `<button onclick="deletePost('${doc.id}')" style="color:red;border:none;background:none;cursor:pointer">Delete</button>` : ''}</div>`;
                 });
             });
         }
@@ -182,13 +166,14 @@
     window.deletePost = async (id) => { if(confirm("Delete this post?")) await deleteDoc(doc(db, "posts", id)); };
     window.logout = () => { signOut(auth); location.reload(); };
     document.getElementById('auth-btn').onclick = async () => {
-        const email = document.getElementById('email').value;
-        const pass = document.getElementById('password').value;
+        const email = document.getElementById('email').value.trim(), pass = document.getElementById('password').value.trim();
+        if (!email || !pass) { showError("Please fill all fields."); return; }
         try { 
-            document.getElementById('auth-title').innerText === "Login" 
-                ? await signInWithEmailAndPassword(auth, email, pass) 
-                : await createUserWithEmailAndPassword(auth, email, pass); 
-        } catch(e) { alert(e.message); }
+            document.getElementById('auth-title').innerText === "Login" ? await signInWithEmailAndPassword(auth, email, pass) : await createUserWithEmailAndPassword(auth, email, pass); 
+        } catch(e) { 
+            const msg = e.code === 'auth/invalid-credential' ? "Incorrect email or password." : e.code === 'auth/email-already-in-use' ? "Email already exists." : "An error occurred.";
+            showError(msg); 
+        }
     };
 </script>
 </body>
