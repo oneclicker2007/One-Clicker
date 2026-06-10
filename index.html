@@ -16,7 +16,6 @@
         .btn { width: 100%; padding: 12px; background: #000; color: #fff; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; margin-top: 10px; }
         .btn-cancel { background: #e0e0e0; color: #000; }
         
-        /* Updated Error Message Design */
         .err-msg { display: none; background: #fff5f5; border-left: 5px solid #d32f2f; color: #d32f2f; padding: 12px; margin-bottom: 15px; border-radius: 4px; font-size: 0.9rem; font-weight: 500; text-align: left; }
         
         #main { display: none; width: 100%; max-width: 600px; margin: 0 auto; min-height: 100vh; padding-bottom: 80px; box-sizing: border-box; }
@@ -27,10 +26,12 @@
         .post-author { font-size: 0.8rem; font-weight: bold; color: #777; margin-bottom: 5px; }
         .post-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; }
         
-        .post-card p, .post-title { word-break: break-all; overflow-wrap: anywhere; white-space: pre-wrap; }
-        .post-card p { margin: 5px 0; }
-        
-        .profile-container, .settings-container, .chat-container { padding: 1rem; text-align: center; }
+        .post-actions { display: flex; gap: 15px; margin-top: 10px; }
+        .action-icon { cursor: pointer; width: 20px; height: 20px; fill: var(--text); }
+
+        .profile-pic { width: 80px; height: 80px; background: #eee; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
+        .profile-pic svg { width: 50px; height: 50px; fill: #777; }
+
         .name-display { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 15px 0; font-size: 1.2rem; font-weight: bold; }
         #edit-section { display: none; margin-top: 10px; }
         .pencil-icon { cursor: pointer; width: 20px; height: 20px; fill: var(--text); }
@@ -55,6 +56,7 @@
     <div class="modal-box" id="modal-content">
         <h3 id="modal-title">Action</h3>
         <p id="modal-body">Are you sure?</p>
+        <input type="text" id="modal-input" placeholder="Enter reason (max 50)" maxlength="50" style="display:none">
         <button class="btn" id="modal-confirm-btn">Confirm</button>
         <button class="btn btn-cancel" onclick="document.getElementById('modal-overlay').style.display='none'">Cancel</button>
     </div>
@@ -83,6 +85,7 @@
     <div id="profile-view" class="view">
         <div class="profile-container">
             <h1>Profile</h1>
+            <div class="profile-pic"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
             <p><strong>Account ID:</strong> <span id="display-uid"></span></p>
             <div class="name-display">
                 <span id="name-text"></span>
@@ -136,10 +139,16 @@
     const db = getFirestore(app);
     let currentUser = null, currentDisplayName = "", placeholderInterval = null;
 
-    window.showModal = (title, body, confirmCallback) => {
+    window.showModal = (title, body, confirmCallback, showInput = false) => {
         document.getElementById('modal-title').innerText = title;
         document.getElementById('modal-body').innerText = body;
-        document.getElementById('modal-confirm-btn').onclick = () => { confirmCallback(); document.getElementById('modal-overlay').style.display='none'; };
+        const input = document.getElementById('modal-input');
+        input.style.display = showInput ? 'block' : 'none';
+        document.getElementById('modal-confirm-btn').onclick = () => { 
+            confirmCallback(input.value); 
+            document.getElementById('modal-overlay').style.display='none'; 
+            input.value = '';
+        };
         document.getElementById('modal-overlay').style.display = 'flex';
     };
 
@@ -219,6 +228,15 @@
         switchView('home-view');
     };
 
+    window.likePost = async (postId) => {
+        await setDoc(doc(db, `posts/${postId}/likes`, currentUser.uid), { liked: true });
+    };
+
+    window.reportPost = async (postId, reason) => {
+        if(!reason) return;
+        await addDoc(collection(db, "reports"), { postId, reason, reporter: currentUser.uid });
+    };
+
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             currentUser = user;
@@ -229,14 +247,18 @@
             onSnapshot(q, snap => {
                 const container = document.getElementById('feed-container');
                 container.innerHTML = '';
-                snap.forEach(doc => {
-                    const data = doc.data();
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
                     container.innerHTML += `
                         <div class="post-card">
                             <div class="post-author">${data.authorName || 'Anonymous'}</div>
                             ${data.title ? `<div class="post-title">${data.title.replace(/</g, "&lt;")}</div>` : ''}
                             <p>${data.content.replace(/</g, "&lt;")}</p>
-                            ${data.authorUID === user.uid ? `<button onclick="showModal('Delete Post', 'Are you sure?', () => deletePost('${doc.id}'))" style="color:red;border:none;background:none;cursor:pointer">Delete</button>` : ''}
+                            <div class="post-actions">
+                                <svg class="action-icon" onclick="likePost('${docSnap.id}')" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                <svg class="action-icon" onclick="showModal('Report', 'Reason for reporting?', (val) => reportPost('${docSnap.id}', val), true)" viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
+                                ${data.authorUID === user.uid ? `<button onclick="showModal('Delete', 'Delete post?', () => deletePost('${docSnap.id}'))" style="color:red;border:none;background:none;cursor:pointer">Delete</button>` : ''}
+                            </div>
                         </div>`;
                 });
             });
@@ -245,10 +267,7 @@
 
     window.deletePost = async (id) => { await deleteDoc(doc(db, "posts", id)); };
     
-    window.executeLogout = () => {
-        signOut(auth);
-        location.reload();
-    };
+    window.executeLogout = () => { signOut(auth); location.reload(); };
     
     document.getElementById('auth-btn').onclick = async () => {
         const email = document.getElementById('email').value.trim(), pass = document.getElementById('password').value.trim();
@@ -260,8 +279,7 @@
         try { 
             isLogin ? await signInWithEmailAndPassword(auth, email, pass) : await createUserWithEmailAndPassword(auth, email, pass); 
         } catch(e) { 
-            const msg = e.code === 'auth/invalid-credential' ? "Invalid credentials." : e.code === 'auth/email-already-in-use' ? "Email already exists." : "An error occurred.";
-            showError(msg); 
+            showError("Auth error."); 
         }
     };
 </script>
