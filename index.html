@@ -15,7 +15,9 @@
         input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; background: var(--bg); color: var(--text); }
         .btn { width: 100%; padding: 12px; background: #000; color: #fff; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; margin-top: 10px; }
         .btn-cancel { background: #e0e0e0; color: #000; }
-        .err-msg { color: #d32f2f; font-size: 0.85rem; margin-bottom: 10px; display: none; font-weight: 500; text-align: center; }
+        
+        /* Updated Error Message Design */
+        .err-msg { display: none; background: #fff5f5; border-left: 5px solid #d32f2f; color: #d32f2f; padding: 12px; margin-bottom: 15px; border-radius: 4px; font-size: 0.9rem; font-weight: 500; text-align: left; }
         
         #main { display: none; width: 100%; max-width: 600px; margin: 0 auto; min-height: 100vh; padding-bottom: 80px; box-sizing: border-box; }
         .view { display: none; padding: 1rem; width: 100%; box-sizing: border-box; }
@@ -25,12 +27,7 @@
         .post-author { font-size: 0.8rem; font-weight: bold; color: #777; margin-bottom: 5px; }
         .post-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; }
         
-        /* Force text wrapping to prevent overflow */
-        .post-card p, .post-title { 
-            word-break: break-all; 
-            overflow-wrap: anywhere; 
-            white-space: pre-wrap; 
-        }
+        .post-card p, .post-title { word-break: break-all; overflow-wrap: anywhere; white-space: pre-wrap; }
         .post-card p { margin: 5px 0; }
         
         .profile-container, .settings-container, .chat-container { padding: 1rem; text-align: center; }
@@ -259,7 +256,7 @@
         try { 
             document.getElementById('auth-title').innerText === "Login" ? await signInWithEmailAndPassword(auth, email, pass) : await createUserWithEmailAndPassword(auth, email, pass); 
         } catch(e) { 
-            const msg = e.code === 'auth/invalid-credential' ? "Incorrect email or password." : e.code === 'auth/email-already-in-use' ? "Email already exists." : "An error occurred.";
+            const msg = e.code === 'auth/invalid-credential' ? "Invalid credentials." : e.code === 'auth/email-already-in-use' ? "Email already exists." : "An error occurred.";
             showError(msg); 
         }
     };
