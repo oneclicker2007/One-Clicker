@@ -2,30 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Social Platform | Connect</title>
     <style>
         :root { --bg: #ffffff; --text: #0a192f; --border: #e3e8ef; }
         [data-theme="dark"] { --bg: #0a192f; --text: #ffffff; --border: #1f2d40; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; transition: background 0.3s, color 0.3s; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; transition: background 0.3s, color 0.3s; overflow-x: hidden; }
+        
         #auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 1rem; }
-        .auth-box { width: 100%; max-width: 400px; padding: 2rem; border: 1px solid var(--border); border-radius: 12px; }
+        .auth-box { width: 90%; max-width: 400px; padding: 2rem; border: 1px solid var(--border); border-radius: 12px; }
         input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; background: var(--bg); color: var(--text); }
         .btn { width: 100%; padding: 12px; background: #000; color: #fff; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; }
         .err-msg { color: #d32f2f; font-size: 0.85rem; margin-bottom: 10px; display: none; font-weight: 500; text-align: center; }
-        .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+        
+        #main { display: none; width: 100%; max-width: 600px; margin: 0 auto; min-height: 100vh; padding-bottom: 80px; box-sizing: border-box; }
+        .view { display: none; padding: 1rem; width: 100%; box-sizing: border-box; }
+        .view.active { display: block; }
+        
+        .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; width: 100%; box-sizing: border-box; }
         .post-author { font-size: 0.8rem; font-weight: bold; color: #777; margin-bottom: 5px; }
+        
         .profile-container, .settings-container, .chat-container { padding: 1rem; text-align: center; }
         .name-display { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 15px 0; font-size: 1.2rem; font-weight: bold; }
         #edit-section { display: none; margin-top: 10px; }
         .pencil-icon { cursor: pointer; width: 20px; height: 20px; fill: var(--text); }
-        #main { display: none; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
-        .view { display: none; padding: 1rem; }
-        .view.active { display: block; }
-        .nav-bottom { position: fixed; bottom: 0; width: 100%; max-width: 600px; height: 70px; background: var(--bg); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; }
+        
+        .nav-bottom { position: fixed; bottom: 0; width: 100%; max-width: 600px; height: 70px; background: var(--bg); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; z-index: 1000; }
         .nav-btn { background: none; border: none; cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; }
         .nav-btn svg { width: 28px; height: 28px; fill: var(--text); }
         .nav-btn.post-btn svg { width: 40px; height: 40px; background: #000; fill: #fff; padding: 10px; border-radius: 50%; }
+        
         .toggle-container { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 20px 0; }
         .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
