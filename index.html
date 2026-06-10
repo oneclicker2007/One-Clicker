@@ -28,8 +28,7 @@
         
         .post-actions { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
         .action-icon { cursor: pointer; width: 24px; height: 24px; fill: #777; }
-        .like-active { fill: #d32f2f; }
-        .like-count { font-size: 0.9rem; font-weight: bold; }
+        .like-count { font-size: 0.9rem; font-weight: bold; margin-left: -10px; }
 
         .profile-pic { width: 80px; height: 80px; background: #eee; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
         .profile-pic svg { width: 50px; height: 50px; fill: #777; }
@@ -244,9 +243,7 @@
                     transaction.update(postRef, { likeCount: increment(1) });
                 }
             });
-        } catch (e) {
-            console.error("Like failed:", e);
-        }
+        } catch (e) { console.error("Like failed:", e); }
     };
 
     window.reportPost = async (postId, reason) => {
