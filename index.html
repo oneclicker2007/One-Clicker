@@ -243,7 +243,10 @@
                     transaction.update(postRef, { likeCount: increment(1) });
                 }
             });
-        } catch (e) { console.error("Like failed:", e); }
+            console.log("Like successful");
+        } catch (e) { 
+            console.error("Like failed. Reason:", e.message); 
+        }
     };
 
     window.reportPost = async (postId, reason) => {
