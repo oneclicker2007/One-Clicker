@@ -231,7 +231,7 @@
         switchView('home-view');
     };
 
-    window.likePost = async (postId, el) => {
+    window.likePost = async (postId) => {
         if (!currentUser) return;
         const likeRef = doc(db, `posts/${postId}/likes`, currentUser.uid);
         const postRef = doc(db, "posts", postId);
@@ -242,11 +242,9 @@
                 if (!likeDoc.exists()) {
                     transaction.set(likeRef, { liked: true });
                     transaction.update(postRef, { likeCount: increment(1) });
-                    el.classList.add('liked');
                 } else {
                     transaction.delete(likeRef);
                     transaction.update(postRef, { likeCount: increment(-1) });
-                    el.classList.remove('liked');
                 }
             });
         } catch (e) { console.error("Transaction failed:", e); }
@@ -277,7 +275,7 @@
                             ${data.title ? `<div class="post-title">${data.title.replace(/</g, "&lt;")}</div>` : ''}
                             <p>${data.content.replace(/</g, "&lt;")}</p>
                             <div class="post-actions">
-                                <svg class="action-icon ${isLiked ? 'liked' : ''}" onclick="likePost('${docSnap.id}', this)" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                <svg class="action-icon ${isLiked ? 'liked' : ''}" onclick="likePost('${docSnap.id}')" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                                 <span class="like-count">${data.likeCount || 0}</span>
                                 <svg class="action-icon" onclick="showModal('Report', 'Reason for reporting?', (val) => reportPost('${docSnap.id}', val), true)" viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
                                 ${data.authorUID === user.uid ? `<button onclick="showModal('Delete', 'Delete post?', () => deletePost('${docSnap.id}'))" style="color:red;border:none;background:none;cursor:pointer">Delete</button>` : ''}
