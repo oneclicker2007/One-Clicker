@@ -22,12 +22,12 @@
         .view { display: none; padding: 1rem; width: 100%; box-sizing: border-box; }
         .view.active { display: block; }
         
-        .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; width: 100%; box-sizing: border-box; word-wrap: break-word; }
+        .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; width: 100%; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }
         .post-author { font-size: 0.8rem; font-weight: bold; color: #777; margin-bottom: 5px; }
         .post-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; word-break: break-word; }
         
         .post-actions { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
-        .action-icon { cursor: pointer; width: 24px; height: 24px; fill: #777; }
+        .action-icon { cursor: pointer; width: 24px; height: 24px; fill: #777; transition: fill 0.1s ease; }
         .action-icon.liked { fill: #000 !important; }
         .like-count { font-size: 0.9rem; font-weight: bold; margin-left: -10px; }
 
@@ -50,6 +50,12 @@
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.4s; }
         input:checked + .slider { background-color: #000; }
         input:checked + .slider:before { transform: translateX(26px); }
+
+        /* Dedicated Layout Structure for Chat View Control Additions */
+        .chat-view-container { display: flex; flex-direction: column; min-height: calc(100vh - 170px); position: relative; width: 100%; box-sizing: border-box; }
+        .new-chat-wrapper { position: absolute; right: 0; top: 45%; transform: translateY(-50%); display: flex; justify-content: flex-end; align-items: center; padding-right: 5px; }
+        .btn-new-chat { background: #000; color: #fff; border: none; padding: 12px 20px; font-weight: bold; border-radius: 30px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 0.95rem; transition: background 0.2s ease; }
+        .btn-new-chat svg { width: 16px; height: 16px; fill: #fff; }
     </style>
 </head>
 <body>
@@ -77,7 +83,19 @@
 
 <div id="main">
     <div id="home-view" class="view active"><h1>Feed</h1><div id="feed-container"></div></div>
-    <div id="chat-view" class="view"><h1>Chat</h1><p>Coming soon...</p></div>
+    
+    <div id="chat-view" class="view">
+        <div class="chat-view-container">
+            <h1>Chat</h1>
+            <div class="new-chat-wrapper">
+                <button class="btn-new-chat">
+                    <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                    New Chat
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <div id="post-view" class="view">
         <h1>Create Post</h1>
         <input type="text" id="post-title" placeholder="Title (Max 50)" maxlength="50">
@@ -118,7 +136,7 @@
         <button class="nav-btn" onclick="switchView('chat-view')"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></button>
         <button class="nav-btn post-btn" onclick="switchView('post-view')"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
         <button class="nav-btn" onclick="loadProfile(); switchView('profile-view')"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button>
-        <button class="nav-btn" onclick="switchView('settings-view')"><svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s-.03.66-.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg></button>
+        <button class="nav-btn" onclick="switchView('settings-view')"><svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s-.03.66-.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73(1.69-.98l.38-2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg></button>
     </nav>
 </div>
 
@@ -231,11 +249,17 @@
         switchView('home-view');
     };
 
-    window.likePost = async (postId) => {
+    window.likePost = async (postId, el) => {
         if (!currentUser) return;
         const likeRef = doc(db, `posts/${postId}/likes`, currentUser.uid);
         const postRef = doc(db, "posts", postId);
         
+        const willLike = !el.classList.contains('liked');
+        el.classList.toggle('liked', willLike);
+        const countSpan = el.nextElementSibling;
+        let currentCount = parseInt(countSpan.innerText) || 0;
+        countSpan.innerText = willLike ? currentCount + 1 : Math.max(0, currentCount - 1);
+
         try {
             await runTransaction(db, async (transaction) => {
                 const likeDoc = await transaction.get(likeRef);
@@ -247,7 +271,11 @@
                     transaction.update(postRef, { likeCount: increment(-1) });
                 }
             });
-        } catch (e) { console.error("Transaction failed:", e); }
+        } catch (e) { 
+            console.error("Like transaction rejected:", e);
+            el.classList.toggle('liked', !willLike);
+            countSpan.innerText = currentCount;
+        }
     };
 
     window.reportPost = async (postId, reason) => {
@@ -262,26 +290,33 @@
             document.getElementById('auth-overlay').style.display = 'none';
             document.getElementById('main').style.display = 'block';
             const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+            
             onSnapshot(q, async (snap) => {
                 const container = document.getElementById('feed-container');
-                container.innerHTML = '';
+                const postCardsHTML = [];
+                
                 for (const docSnap of snap.docs) {
                     const data = docSnap.data();
-                    const likeSnap = await getDoc(doc(db, `posts/${docSnap.id}/likes`, currentUser.uid));
-                    const isLiked = likeSnap.exists();
-                    container.innerHTML += `
-                        <div class="post-card">
+                    const postId = docSnap.id;
+                    
+                    const likeSnap = await getDoc(doc(db, `posts/${postId}/likes`, user.uid));
+                    const hasLiked = likeSnap.exists();
+                    
+                    const card = `
+                        <div class="post-card" data-id="${postId}">
                             <div class="post-author">${data.authorName || 'Anonymous'}</div>
                             ${data.title ? `<div class="post-title">${data.title.replace(/</g, "&lt;")}</div>` : ''}
                             <p>${data.content.replace(/</g, "&lt;")}</p>
                             <div class="post-actions">
-                                <svg class="action-icon ${isLiked ? 'liked' : ''}" onclick="likePost('${docSnap.id}')" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                <svg class="action-icon ${hasLiked ? 'liked' : ''}" onclick="likePost('${postId}', this)" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                                 <span class="like-count">${data.likeCount || 0}</span>
-                                <svg class="action-icon" onclick="showModal('Report', 'Reason for reporting?', (val) => reportPost('${docSnap.id}', val), true)" viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
-                                ${data.authorUID === user.uid ? `<button onclick="showModal('Delete', 'Delete post?', () => deletePost('${docSnap.id}'))" style="color:red;border:none;background:none;cursor:pointer">Delete</button>` : ''}
+                                <svg class="action-icon" onclick="showModal('Report', 'Reason for reporting?', (val) => reportPost('${postId}', val), true)" viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
+                                ${data.authorUID === user.uid ? `<button onclick="showModal('Delete', 'Delete post?', () => deletePost('${postId}'))" style="color:red;border:none;background:none;cursor:pointer">Delete</button>` : ''}
                             </div>
                         </div>`;
+                    postCardsHTML.push(card);
                 }
+                container.innerHTML = postCardsHTML.join('');
             });
         }
     });
