@@ -21,9 +21,16 @@
         .view { display: none; padding: 1rem; width: 100%; box-sizing: border-box; }
         .view.active { display: block; }
         
-        .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; width: 100%; box-sizing: border-box; overflow-wrap: break-word; word-break: break-word; }
+        .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; width: 100%; box-sizing: border-box; }
         .post-author { font-size: 0.8rem; font-weight: bold; color: #777; margin-bottom: 5px; }
         .post-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; }
+        
+        /* Force text wrapping to prevent overflow */
+        .post-card p, .post-title { 
+            word-break: break-all; 
+            overflow-wrap: anywhere; 
+            white-space: pre-wrap; 
+        }
         .post-card p { margin: 5px 0; }
         
         .profile-container, .settings-container, .chat-container { padding: 1rem; text-align: center; }
