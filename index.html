@@ -74,7 +74,7 @@
                 <input type="text" id="username-input" maxlength="20">
                 <button class="btn" onclick="updateProfile()">Save</button>
             </div>
-            <button class="btn" onclick="logout()" style="background:#d32f2f; margin-top: 20px;">Logout</button>
+            <button class="btn" onclick="confirmLogout()" style="background:#d32f2f; margin-top: 20px;">Logout</button>
         </div>
     </div>
     <div id="settings-view" class="view">
@@ -205,7 +205,14 @@
     });
 
     window.deletePost = async (id) => { if(confirm("Delete this post?")) await deleteDoc(doc(db, "posts", id)); };
-    window.logout = () => { signOut(auth); location.reload(); };
+    
+    window.confirmLogout = () => {
+        if (confirm("Are you sure you want to logout?")) {
+            signOut(auth);
+            location.reload();
+        }
+    };
+    
     document.getElementById('auth-btn').onclick = async () => {
         const email = document.getElementById('email').value.trim(), pass = document.getElementById('password').value.trim();
         if (!email || !pass) { showError("Please fill all fields."); return; }
