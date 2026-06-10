@@ -230,7 +230,7 @@
             document.getElementById('main').style.display = 'block';
             const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
             onSnapshot(q, snap => {
-                const container = document.getElementById('feed-container');ghhg
+                const container = document.getElementById('feed-container');
                 container.innerHTML = '';
                 snap.forEach(doc => {
                     const data = doc.data();
