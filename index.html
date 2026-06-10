@@ -24,6 +24,7 @@
         
         .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; width: 100%; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }
         .post-author { font-size: 0.8rem; font-weight: bold; color: #777; margin-bottom: 5px; }
+        .post-timestamp { font-weight: normal; color: #aaa; margin-left: 5px; }
         .post-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; word-break: break-word; }
         
         .post-actions { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
@@ -307,9 +308,16 @@
                     const likeSnap = await getDoc(doc(db, `posts/${postId}/likes`, user.uid));
                     const hasLiked = likeSnap.exists();
                     
+                    // Parse out localized creation time stamps gracefully
+                    let formattedTime = "Just now";
+                    if (data.createdAt) {
+                        const dateObj = data.createdAt.toDate();
+                        formattedTime = dateObj.toLocaleDateString() + " " + dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    }
+                    
                     const card = `
                         <div class="post-card" data-id="${postId}">
-                            <div class="post-author">${data.authorName || 'Anonymous'}</div>
+                            <div class="post-author">${data.authorName || 'Anonymous'}<span class="post-timestamp"> • ${formattedTime}</span></div>
                             ${data.title ? `<div class="post-title">${data.title.replace(/</g, "&lt;")}</div>` : ''}
                             <p>${data.content.replace(/</g, "&lt;")}</p>
                             <div class="post-actions">
