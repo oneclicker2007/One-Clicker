@@ -21,9 +21,10 @@
         .view { display: none; padding: 1rem; width: 100%; box-sizing: border-box; }
         .view.active { display: block; }
         
-        .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; width: 100%; box-sizing: border-box; }
+        .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; width: 100%; box-sizing: border-box; overflow-wrap: break-word; word-break: break-word; }
         .post-author { font-size: 0.8rem; font-weight: bold; color: #777; margin-bottom: 5px; }
         .post-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; }
+        .post-card p { margin: 5px 0; }
         
         .profile-container, .settings-container, .chat-container { padding: 1rem; text-align: center; }
         .name-display { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 15px 0; font-size: 1.2rem; font-weight: bold; }
