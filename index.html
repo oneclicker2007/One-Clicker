@@ -22,13 +22,14 @@
         .view { display: none; padding: 1rem; width: 100%; box-sizing: border-box; }
         .view.active { display: block; }
         
-        /* Fixed text overflowing issues */
         .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; width: 100%; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }
         .post-author { font-size: 0.8rem; font-weight: bold; color: #777; margin-bottom: 5px; }
         .post-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; word-break: break-word; }
         
-        .post-actions { display: flex; gap: 15px; margin-top: 10px; }
+        .post-actions { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
         .action-icon { cursor: pointer; width: 20px; height: 20px; fill: var(--text); }
+        .like-count { font-size: 0.9rem; margin-left: -10px; }
+
         .profile-pic { width: 80px; height: 80px; background: #eee; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
         .profile-pic svg { width: 50px; height: 50px; fill: #777; }
 
@@ -123,7 +124,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, doc, getDoc, setDoc, runTransaction, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDdOMnwf1r0e5ETserurMUeRkufc17vE_g",
@@ -221,7 +222,8 @@
             content: text, 
             authorUID: currentUser.uid, 
             authorName: currentDisplayName, 
-            createdAt: serverTimestamp() 
+            createdAt: serverTimestamp(),
+            likeCount: 0 
         });
         document.getElementById('post-title').value = '';
         document.getElementById('post-text').value = '';
@@ -229,7 +231,16 @@
     };
 
     window.likePost = async (postId) => {
-        await setDoc(doc(db, `posts/${postId}/likes`, currentUser.uid), { liked: true });
+        const likeRef = doc(db, `posts/${postId}/likes`, currentUser.uid);
+        const postRef = doc(db, "posts", postId);
+        
+        await runTransaction(db, async (transaction) => {
+            const likeDoc = await transaction.get(likeRef);
+            if (!likeDoc.exists()) {
+                transaction.set(likeRef, { liked: true });
+                transaction.update(postRef, { likeCount: increment(1) });
+            }
+        });
     };
 
     window.reportPost = async (postId, reason) => {
@@ -256,6 +267,7 @@
                             <p>${data.content.replace(/</g, "&lt;")}</p>
                             <div class="post-actions">
                                 <svg class="action-icon" onclick="likePost('${docSnap.id}')" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                <span class="like-count">${data.likeCount || 0}</span>
                                 <svg class="action-icon" onclick="showModal('Report', 'Reason for reporting?', (val) => reportPost('${docSnap.id}', val), true)" viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
                                 ${data.authorUID === user.uid ? `<button onclick="showModal('Delete', 'Delete post?', () => deletePost('${docSnap.id}'))" style="color:red;border:none;background:none;cursor:pointer">Delete</button>` : ''}
                             </div>
