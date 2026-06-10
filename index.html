@@ -252,9 +252,13 @@
     
     document.getElementById('auth-btn').onclick = async () => {
         const email = document.getElementById('email').value.trim(), pass = document.getElementById('password').value.trim();
+        const isLogin = document.getElementById('auth-title').innerText === "Login";
+        
         if (!email || !pass) { showError("Please fill all fields."); return; }
+        if (!isLogin && pass.length < 6) { showError("Password must contain at least 6 characters."); return; }
+
         try { 
-            document.getElementById('auth-title').innerText === "Login" ? await signInWithEmailAndPassword(auth, email, pass) : await createUserWithEmailAndPassword(auth, email, pass); 
+            isLogin ? await signInWithEmailAndPassword(auth, email, pass) : await createUserWithEmailAndPassword(auth, email, pass); 
         } catch(e) { 
             const msg = e.code === 'auth/invalid-credential' ? "Invalid credentials." : e.code === 'auth/email-already-in-use' ? "Email already exists." : "An error occurred.";
             showError(msg); 
