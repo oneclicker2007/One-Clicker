@@ -27,8 +27,9 @@
         .post-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; word-break: break-word; }
         
         .post-actions { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
-        .action-icon { cursor: pointer; width: 20px; height: 20px; fill: var(--text); }
-        .like-count { font-size: 0.9rem; margin-left: -10px; }
+        .action-icon { cursor: pointer; width: 24px; height: 24px; fill: #777; }
+        .like-active { fill: #d32f2f; }
+        .like-count { font-size: 0.9rem; font-weight: bold; }
 
         .profile-pic { width: 80px; height: 80px; background: #eee; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
         .profile-pic svg { width: 50px; height: 50px; fill: #777; }
@@ -231,16 +232,21 @@
     };
 
     window.likePost = async (postId) => {
+        if (!currentUser) return;
         const likeRef = doc(db, `posts/${postId}/likes`, currentUser.uid);
         const postRef = doc(db, "posts", postId);
         
-        await runTransaction(db, async (transaction) => {
-            const likeDoc = await transaction.get(likeRef);
-            if (!likeDoc.exists()) {
-                transaction.set(likeRef, { liked: true });
-                transaction.update(postRef, { likeCount: increment(1) });
-            }
-        });
+        try {
+            await runTransaction(db, async (transaction) => {
+                const likeDoc = await transaction.get(likeRef);
+                if (!likeDoc.exists()) {
+                    transaction.set(likeRef, { liked: true });
+                    transaction.update(postRef, { likeCount: increment(1) });
+                }
+            });
+        } catch (e) {
+            console.error("Like failed:", e);
+        }
     };
 
     window.reportPost = async (postId, reason) => {
