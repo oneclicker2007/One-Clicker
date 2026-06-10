@@ -22,13 +22,13 @@
         .view { display: none; padding: 1rem; width: 100%; box-sizing: border-box; }
         .view.active { display: block; }
         
-        .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; width: 100%; box-sizing: border-box; }
+        /* Fixed text overflowing issues */
+        .post-card { border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; width: 100%; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }
         .post-author { font-size: 0.8rem; font-weight: bold; color: #777; margin-bottom: 5px; }
-        .post-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; }
+        .post-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; word-break: break-word; }
         
         .post-actions { display: flex; gap: 15px; margin-top: 10px; }
         .action-icon { cursor: pointer; width: 20px; height: 20px; fill: var(--text); }
-
         .profile-pic { width: 80px; height: 80px; background: #eee; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
         .profile-pic svg { width: 50px; height: 50px; fill: #777; }
 
@@ -279,7 +279,8 @@
         try { 
             isLogin ? await signInWithEmailAndPassword(auth, email, pass) : await createUserWithEmailAndPassword(auth, email, pass); 
         } catch(e) { 
-            showError("Auth error."); 
+            const msg = e.code === 'auth/invalid-credential' ? "Incorrect email or password." : e.code === 'auth/email-already-in-use' ? "Email already exists." : "An error occurred.";
+            showError(msg); 
         }
     };
 </script>
