@@ -64,7 +64,6 @@
         #edit-section { display: none; margin-top: 10px; }
         .pencil-icon { cursor: pointer; width: 20px; height: 20px; fill: var(--text); }
         
-        /* Profile Native Stream Feed Configuration */
         .profile-feed-heading { border-top: 1px solid var(--border); margin-top: 25px; padding-top: 15px; font-size: 1.1rem; font-weight: bold; text-align: left; }
         #profile-posts-container { margin-top: 15px; width: 100%; }
 
@@ -110,6 +109,39 @@
         .chat-pane { display: none; width: 100%; }
         .chat-pane.active { display: block; }
         .empty-chat-msg { color: #777; font-size: 0.95rem; padding: 10px 5px; }
+
+        /* Advanced Architecture UI elements for Realtime Chatting subchannels */
+        .chat-item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; cursor: pointer; background: rgba(0,0,0,0.01); transition: background 0.2s; }
+        .chat-item-row:hover { background: rgba(0,0,0,0.03); }
+        .chat-row-title { font-weight: bold; font-size: 0.95rem; color: var(--text); }
+        .chat-row-subtitle { font-size: 0.75rem; color: #777; margin-top: 2px; }
+        .chat-invite-actions-wrap { display: flex; gap: 6px; }
+        .btn-invite-action { border: none; padding: 6px 12px; font-size: 0.75rem; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        .btn-invite-accept { background: #000; color: #fff; }
+        .btn-invite-reject { background: #e0e0e0; color: #000; }
+
+        /* Messaging Dedicated Window Framework Overlay Sheet */
+        #active-chat-viewport-panel { position: fixed; inset: 0; background: var(--bg); z-index: 2500; display: none; flex-direction: column; box-sizing: border-box; }
+        .chat-viewport-header { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); gap: 15px; }
+        .btn-viewport-back { background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 4px; }
+        .btn-viewport-back svg { width: 24px; height: 24px; fill: var(--text); }
+        .viewport-header-meta-wrap { flex: 1; }
+        .viewport-header-title { font-weight: bold; font-size: 1.1rem; margin: 0; }
+        .viewport-header-id-indicator { font-size: 0.75rem; color: #777; }
+        .btn-group-invite-trigger { background: #000; color: #fff; border: none; font-size: 0.75rem; font-weight: bold; padding: 6px 12px; border-radius: 15px; cursor: pointer; }
+
+        .chat-viewport-messages-stream { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box; background: rgba(0,0,0,0.01); }
+        .msg-bubble-wrap { max-width: 75%; padding: 10px 14px; border-radius: 12px; font-size: 0.9rem; word-break: break-word; line-height: 1.4; position: relative; }
+        .msg-bubble-wrap.msg-incoming { background: var(--border); color: var(--text); align-self: flex-start; border-top-left-radius: 2px; }
+        .msg-bubble-wrap.msg-outgoing { background: #000; color: #fff; align-self: flex-end; border-top-right-radius: 2px; }
+        .msg-bubble-author-label { font-size: 0.7rem; font-weight: bold; color: rgba(255,255,255,0.6); margin-bottom: 2px; }
+        .msg-bubble-wrap.msg-incoming .msg-bubble-author-label { color: #777; }
+        .msg-bubble-time-label { font-size: 0.65rem; text-align: right; opacity: 0.5; margin-top: 4px; }
+
+        .chat-viewport-input-footer { padding: 12px 15px calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; position: relative; background: var(--bg); }
+        .chat-viewport-input-footer input { margin-bottom: 0; padding: 10px 45px 10px 14px; font-size: 0.9rem; border-radius: 24px; }
+        .btn-viewport-message-send { background: none; border: none; cursor: pointer; position: absolute; right: 24px; top: 21px; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; padding: 4px; }
+        .btn-viewport-message-send svg { width: 22px; height: 22px; fill: var(--text); }
     </style>
 </head>
 <body>
@@ -128,6 +160,26 @@
                 <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
             </button>
         </div>
+    </div>
+</div>
+
+<div id="active-chat-viewport-panel">
+    <div class="chat-viewport-header">
+        <button class="btn-viewport-back" onclick="closeActiveChatViewport()">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </button>
+        <div class="viewport-header-meta-wrap">
+            <div class="viewport-header-title" id="viewport-room-title">Loading Room...</div>
+            <div class="viewport-header-id-indicator" id="viewport-room-id-tag">ID: --</div>
+        </div>
+        <button class="btn-group-invite-trigger" id="viewport-group-invite-action-btn" style="display:none;">Invite Member</button>
+    </div>
+    <div class="chat-viewport-messages-stream" id="viewport-messages-container"></div>
+    <div class="chat-viewport-input-footer">
+        <input type="text" id="viewport-message-input-field" placeholder="Type a message... (Max 100)" maxlength="100" onkeydown="if(event.key === 'Enter') dispatchDirectChatMessage()">
+        <button class="btn-viewport-message-send" onclick="dispatchDirectChatMessage()">
+            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
     </div>
 </div>
 
@@ -181,14 +233,15 @@
             </div>
 
             <div class="chat-pane active" id="pane-friends">
-                <div class="empty-chat-msg">No friends chat history yet.</div>
+                <div id="friends-chats-list-target"></div>
             </div>
             <div class="chat-pane" id="pane-group">
-                <div class="empty-chat-msg">No group conversations found.</div>
+                <div id="groups-invites-section-target"></div>
+                <div id="groups-chats-list-target"></div>
             </div>
 
             <div class="new-chat-wrapper">
-                <button class="btn-new-chat">
+                <button class="btn-new-chat" onclick="triggerNewChatWorkflow()">
                     <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
                     New Chat
                 </button>
@@ -246,7 +299,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, query, orderBy, where, serverTimestamp, doc, getDoc, setDoc, runTransaction, increment, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, query, orderBy, where, serverTimestamp, doc, getDoc, setDoc, runTransaction, increment, writeBatch, getDocs, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDdOMnwf1r0e5ETserurMUeRkufc17vE_g",
@@ -262,7 +315,10 @@
     const db = getFirestore(app);
     let currentUser = null, currentDisplayName = "", placeholderInterval = null;
     let activeCommentsUnsubscribe = null, activeOpenedPostId = null, profileFeedUnsubscribe = null;
-    const activeCommentListeners = {};
+    
+    // Realtime Sync Handlers for messaging context blocks
+    let directChatsUnsubscribe = null, groupChatsUnsubscribe = null, groupInvitesUnsubscribe = null, currentActiveRoomMessagesUnsubscribe = null;
+    let currentRoomId = null, currentRoomType = null; // type: 'friend' or 'group'
 
     window.showModal = (title, body, confirmCallback, showInput = false) => {
         document.getElementById('modal-title').innerText = title;
@@ -331,7 +387,6 @@
         document.getElementById('name-text').innerText = currentDisplayName;
         document.getElementById('username-input').value = currentDisplayName;
         
-        /* Initialize Isolated User-Only Post Snapshot Stream Listener inside profile viewport */
         if (profileFeedUnsubscribe) profileFeedUnsubscribe();
         const profilePostsQuery = query(collection(db, "posts"), where("authorUID", "==", currentUser.uid), orderBy("createdAt", "desc"));
         
@@ -377,12 +432,10 @@
         const username = document.getElementById('username-input').value.trim();
         if(!username) return;
         
-        // Save new user document details profile context block
         await setDoc(doc(db, "users", currentUser.uid), { username }, { merge: true });
         currentDisplayName = username;
         document.getElementById('name-text').innerText = currentDisplayName;
         
-        /* Cascade update username mapping across all historical post documents asynchronously */
         try {
             const postsQuery = query(collection(db, "posts"), where("authorUID", "==", currentUser.uid));
             const querySnapshot = await getDocs(postsQuery);
@@ -518,6 +571,318 @@
 
     document.getElementById('modal-comment-dispatch-trigger').onclick = window.dispatchModalComment;
 
+    /* ------------------------------------------------------------- */
+    /* NEW CHAT ARCHITECTURE SYSTEM - FRIENDS AND GROUPS CORE LOGIC  */
+    /* ------------------------------------------------------------- */
+    
+    window.triggerNewChatWorkflow = () => {
+        window.showModal("Select Chat Type", "Choose an option below to connect:", (choice) => {
+            const parsed = choice.trim().toLowerCase();
+            if(parsed === 'friends' || parsed === 'friend' || parsed === '1') {
+                triggerFriendsOnboardingFlow();
+            } else if (parsed === 'group' || parsed === 'groups' || parsed === '2') {
+                triggerGroupOnboardingFlow();
+            } else {
+                alert("Invalid selection. Type 'friends' or 'group'.");
+            }
+        }, true);
+        document.getElementById('modal-input').placeholder = "Type 'friends' or 'group'";
+    };
+
+    const triggerFriendsOnboardingFlow = () => {
+        window.showModal("New Friends Chat", "Enter your friend's registered Email ID or Account UID:", async (targetIdentity) => {
+            const identity = targetIdentity.trim();
+            if(!identity) return;
+            if(identity === currentUser.uid || identity === currentUser.email) {
+                alert("You cannot start a direct chat with yourself.");
+                return;
+            }
+            
+            let matchedUserUID = null;
+            let matchedName = "Anonymous Partner";
+            
+            // First treat input parameter as a direct User Document ID fetch reference
+            const directUserSnap = await getDoc(doc(db, "users", identity));
+            if(directUserSnap.exists()) {
+                matchedUserUID = identity;
+                matchedName = directUserSnap.data().username || "User";
+            } else {
+                // Secondary fallback lookup tracking via explicit global user email indexing scans
+                try {
+                    const emailLookupQuery = query(collection(db, "users"), where("email", "==", identity));
+                    const emailSnap = await getDocs(emailLookupQuery);
+                    if(!emailSnap.empty) {
+                        matchedUserUID = emailSnap.docs[0].id;
+                        matchedName = emailSnap.docs[0].data().username || "User";
+                    }
+                } catch(err) {
+                    // Fail gracefully if email fields aren't universally indexed yet
+                }
+            }
+
+            if(!matchedUserUID) {
+                // Generically append matching parameters using target string as raw fallback destination descriptor
+                matchedUserUID = identity.replace(/[.#@$\[\]]/g, "_"); 
+            }
+
+            // Create a deterministic shared chat room block hash reference to bypass duplicate allocation anomalies
+            const generatedChatRoomId = [currentUser.uid, matchedUserUID].sort().join("_WS_");
+            
+            await setDoc(doc(db, "chats", generatedChatRoomId), {
+                chatId: generatedChatRoomId,
+                participants: [currentUser.uid, matchedUserUID],
+                namesMapping: {
+                    [currentUser.uid]: currentDisplayName,
+                    [matchedUserUID]: matchedName
+                },
+                lastUpdated: serverTimestamp()
+            }, { merge: true });
+
+            openActiveChatViewport(generatedChatRoomId, 'friend', matchedName);
+        }, true);
+        document.getElementById('modal-input').placeholder = "Friend's Email or Account UID";
+    };
+
+    const triggerGroupOnboardingFlow = () => {
+        window.showModal("Group Channels", "Type 'create' to launch a brand new group or 'join' to merge into an existing room ID:", (choice) => {
+            const parsed = choice.trim().toLowerCase();
+            if(parsed === 'create') {
+                window.showModal("Create Group", "Enter a title name for your group channel:", async (title) => {
+                    const name = title.trim();
+                    if(!name) return;
+                    
+                    const groupRef = await addDoc(collection(db, "groups"), {
+                        groupName: name,
+                        creator: currentUser.uid,
+                        members: [currentUser.uid],
+                        createdAt: serverTimestamp()
+                    });
+                    
+                    openActiveChatViewport(groupRef.id, 'group', name);
+                }, true);
+                document.getElementById('modal-input').placeholder = "Enter group name...";
+            } else if (parsed === 'join') {
+                window.showModal("Join Group Channel", "Enter the exact Group ID code you received:", async (gId) => {
+                    const groupId = gId.trim();
+                    if(!groupId) return;
+                    
+                    const groupDocRef = doc(db, "groups", groupId);
+                    const checkSnap = await getDoc(groupDocRef);
+                    if(!checkSnap.exists()) {
+                        alert("No group channel matching that ID was discovered.");
+                        return;
+                    }
+                    
+                    await setDoc(groupDocRef, {
+                        members: arrayUnion(currentUser.uid)
+                    }, { merge: true });
+                    
+                    openActiveChatViewport(groupId, 'group', checkSnap.data().groupName || "Group Chat");
+                }, true);
+                document.getElementById('modal-input').placeholder = "Enter Group ID string...";
+            }
+        }, true);
+        document.getElementById('modal-input').placeholder = "Type 'create' or 'join'";
+    };
+
+    window.openActiveChatViewport = (roomId, roomType, roomTitle) => {
+        currentRoomId = roomId;
+        currentRoomType = roomType;
+        
+        document.getElementById('viewport-room-title').innerText = roomTitle;
+        document.getElementById('viewport-room-id-tag').innerText = `ID: ${roomId}`;
+        document.getElementById('active-chat-viewport-panel').style.display = 'flex';
+        document.getElementById('viewport-message-input-field').focus();
+        
+        const inviteBtn = document.getElementById('viewport-group-invite-action-btn');
+        if(roomType === 'group') {
+            inviteBtn.style.display = 'block';
+            inviteBtn.onclick = () => launchGroupInvitationWorkflow(roomId, roomTitle);
+        } else {
+            inviteBtn.style.display = 'none';
+        }
+
+        const messagesContainer = document.getElementById('viewport-messages-container');
+        messagesContainer.innerHTML = `<div class="empty-chat-msg">Syncing chat room line streams...</div>`;
+
+        if (currentActiveRoomMessagesUnsubscribe) currentActiveRoomMessagesUnsubscribe();
+
+        const collectionPath = roomType === 'friend' ? `chats/${roomId}/messages` : `groups/${roomId}/messages`;
+        const msgsQuery = query(collection(db, collectionPath), orderBy("timestamp", "asc"));
+        
+        currentActiveRoomMessagesUnsubscribe = onSnapshot(msgsQuery, (snap) => {
+            if(snap.empty) {
+                messagesContainer.innerHTML = `<div class="empty-chat-msg">No messages sent here yet. Text limit is strict 100 characters.</div>`;
+                return;
+            }
+            messagesContainer.innerHTML = snap.docs.map(dSnap => {
+                const mData = dSnap.data();
+                const isMe = mData.senderUID === currentUser.uid;
+                let formattedMsgTime = "";
+                if(mData.timestamp) {
+                    const d = mData.timestamp.toDate();
+                    formattedMsgTime = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+                return `
+                    <div class="msg-bubble-wrap ${isMe ? 'msg-outgoing' : 'msg-incoming'}">
+                        <div class="msg-bubble-author-label">${mData.senderName || 'Anonymous'}</div>
+                        <div>${mData.text.replace(/</g, "&lt;")}</div>
+                        <div class="msg-bubble-time-label">${formattedMsgTime}</div>
+                    </div>`;
+            }).join('');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        });
+    };
+
+    window.closeActiveChatViewport = () => {
+        document.getElementById('active-chat-viewport-panel').style.display = 'none';
+        document.getElementById('viewport-message-input-field').value = '';
+        if (currentActiveRoomMessagesUnsubscribe) { currentActiveRoomMessagesUnsubscribe(); currentActiveRoomMessagesUnsubscribe = null; }
+        currentRoomId = null;
+        currentRoomType = null;
+    };
+
+    window.dispatchDirectChatMessage = async () => {
+        if(!currentRoomId || !currentUser) return;
+        const input = document.getElementById('viewport-message-input-field');
+        const text = input.value.trim();
+        if(!text) return;
+        
+        input.value = '';
+        const targetPath = currentRoomType === 'friend' ? `chats/${currentRoomId}/messages` : `groups/${currentRoomId}/messages`;
+        
+        try {
+            await addDoc(collection(db, targetPath), {
+                text: text,
+                senderUID: currentUser.uid,
+                senderName: currentDisplayName,
+                timestamp: serverTimestamp()
+            });
+            
+            if(currentRoomType === 'friend') {
+                await setDoc(doc(db, "chats", currentRoomId), { lastUpdated: serverTimestamp() }, { merge: true });
+            }
+        } catch(e) {
+            console.error("Message propagation exception context:", e);
+        }
+    };
+
+    const launchGroupInvitationWorkflow = (groupId, groupName) => {
+        window.showModal("Invite Friend", "Enter friend's registered Email ID or Account UID to invite them:", async (identityText) => {
+            const target = identityText.trim();
+            if(!target) return;
+            
+            let targetUID = target;
+            // Scan alternate lookup records if email string matching parameter patterns detected
+            if(target.includes('@')) {
+                try {
+                    const lookup = query(collection(db, "users"), where("email", "==", target));
+                    const snap = await getDocs(lookup);
+                    if(!snap.empty) targetUID = snap.docs[0].id;
+                } catch(e) {}
+            }
+
+            await addDoc(collection(db, "invites"), {
+                groupId: groupId,
+                groupName: groupName,
+                senderUID: currentUser.uid,
+                senderName: currentDisplayName,
+                invitedUID: targetUID,
+                status: 'pending',
+                timestamp: serverTimestamp()
+            });
+            alert("Invitation sent successfully!");
+        }, true);
+        document.getElementById('modal-input').placeholder = "Friend's Email or Account UID";
+    };
+
+    window.handleInviteResponse = async (inviteId, groupId, groupName, action) => {
+        if(action === 'accept') {
+            await setDoc(doc(db, "groups", groupId), {
+                members: arrayUnion(currentUser.uid)
+            }, { merge: true });
+            await deleteDoc(doc(db, "invites", inviteId));
+            alert(`Joined ${groupName}!`);
+        } else {
+            await deleteDoc(doc(db, "invites", inviteId));
+            alert("Invitation declined.");
+        }
+    };
+
+    const initializeSynchronizedChatViews = () => {
+        if(directChatsUnsubscribe) directChatsUnsubscribe();
+        if(groupChatsUnsubscribe) groupChatsUnsubscribe();
+        if(groupInvitesUnsubscribe) groupInvitesUnsubscribe();
+
+        // 1. Hook live listing streams for Friends Chat logs
+        const friendsQuery = query(collection(db, "chats"), where("participants", "array-contains", currentUser.uid));
+        directChatsUnsubscribe = onSnapshot(friendsQuery, (snap) => {
+            const container = document.getElementById('friends-chats-list-target');
+            if(snap.empty) {
+                container.innerHTML = `<div class="empty-chat-msg">No friends chat history yet.</div>`;
+                return;
+            }
+            container.innerHTML = snap.docs.map(dSnap => {
+                const data = dSnap.data();
+                const peerUID = data.participants.find(id => id !== currentUser.uid) || "Unknown User";
+                const peerName = data.namesMapping ? (data.namesMapping[peerUID] || "Friend User") : "Friend User";
+                return `
+                    <div class="chat-item-row" onclick="openActiveChatViewport('${data.chatId}', 'friend', '${peerName}')">
+                        <div>
+                            <div class="chat-row-title">${peerName}</div>
+                            <div class="chat-row-subtitle">UID: ${peerUID}</div>
+                        </div>
+                        <svg style="width:20px;height:20px;fill:#777" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+                    </div>`;
+            }).join('');
+        });
+
+        // 2. Hook live list stream matching Group documents channel records
+        const groupsQuery = query(collection(db, "groups"), where("members", "array-contains", currentUser.uid));
+        groupChatsUnsubscribe = onSnapshot(groupsQuery, (snap) => {
+            const container = document.getElementById('groups-chats-list-target');
+            if(snap.empty) {
+                container.innerHTML = `<div class="empty-chat-msg" style="padding-top:0;">No group conversations found.</div>`;
+                return;
+            }
+            container.innerHTML = snap.docs.map(dSnap => {
+                const data = dSnap.data();
+                return `
+                    <div class="chat-item-row" onclick="openActiveChatViewport('${dSnap.id}', 'group', '${data.groupName}')">
+                        <div>
+                            <div class="chat-row-title">${data.groupName}</div>
+                            <div class="chat-row-subtitle">ID: ${dSnap.id}</div>
+                        </div>
+                        <svg style="width:20px;height:20px;fill:#777" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                    </div>`;
+            }).join('');
+        });
+
+        // 3. Hook pending group invitation card notifications wrapper channel
+        const invitesQuery = query(collection(db, "invites"), where("invitedUID", "==", currentUser.uid), where("status", "==", "pending"));
+        groupInvitesUnsubscribe = onSnapshot(invitesQuery, (snap) => {
+            const container = document.getElementById('groups-invites-section-target');
+            if(snap.empty) {
+                container.innerHTML = '';
+                return;
+            }
+            container.innerHTML = snap.docs.map(dSnap => {
+                const data = dSnap.data();
+                return `
+                    <div class="chat-item-row" style="border-color:#000; background:rgba(0,0,0,0.02)">
+                        <div>
+                            <div class="chat-row-title" style="font-size:0.85rem">Invited to: ${data.groupName}</div>
+                            <div class="chat-row-subtitle">From: ${data.senderName}</div>
+                        </div>
+                        <div class="chat-invite-actions-wrap">
+                            <button class="btn-invite-action btn-invite-accept" onclick="handleInviteResponse('${dSnap.id}', '${data.groupId}', '${data.groupName}', 'accept')">Accept</button>
+                            <button class="btn-invite-action btn-invite-reject" onclick="handleInviteResponse('${dSnap.id}', '${data.groupId}', '${data.groupName}', 'reject')">Reject</button>
+                        </div>
+                    </div>`;
+            }).join('');
+        });
+    };
+
     window.reportPost = async (postId, reason) => {
         if(!reason) return;
         await addDoc(collection(db, "reports"), { postId, reason, reporter: currentUser.uid });
@@ -527,6 +892,14 @@
         if (user) {
             currentUser = user;
             await loadProfile();
+            initializeSynchronizedChatViews(); // Fire the synchronous chatting listeners
+            
+            // Explicitly sync metadata to user account profile database reference to maintain indexing queries
+            await setDoc(doc(db, "users", user.uid), {
+                uid: user.uid,
+                email: user.email
+            }, { merge: true });
+
             document.getElementById('auth-overlay').style.display = 'none';
             document.getElementById('main').style.display = 'block';
             const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
@@ -580,6 +953,9 @@
     
     window.executeLogout = () => { 
         if (profileFeedUnsubscribe) profileFeedUnsubscribe();
+        if (directChatsUnsubscribe) directChatsUnsubscribe();
+        if (groupChatsUnsubscribe) groupChatsUnsubscribe();
+        if (groupInvitesUnsubscribe) groupInvitesUnsubscribe();
         signOut(auth); 
         location.reload(); 
     };
