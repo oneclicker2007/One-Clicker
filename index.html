@@ -119,6 +119,7 @@
         .chat-item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; background: rgba(0,0,0,0.01); transition: background 0.2s; }
         .chat-item-clickable-area { flex: 1; cursor: pointer; }
         .chat-item-row:hover { background: rgba(0,0,0,0.03); }
+        .chat-item-row-live-name { font-weight: bold; font-size: 0.95rem; color: var(--text); }
         .chat-row-title { font-weight: bold; font-size: 0.95rem; color: var(--text); }
         .chat-row-subtitle { font-size: 0.75rem; color: #777; margin-top: 2px; }
         .chat-invite-actions-wrap { display: flex; gap: 6px; }
@@ -142,7 +143,6 @@
         .btn-group-3dot-menu-trigger { background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 6px; position: relative; }
         .btn-group-3dot-menu-trigger svg { width: 20px; height: 20px; fill: var(--text); }
 
-        /* Premium Dropdown Context Box Layout */
         .group-header-dropdown-context-box { display: none; position: absolute; right: 15px; top: 55px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 160px; z-index: 2900; flex-direction: column; padding: 5px 0; }
         .dropdown-context-item { padding: 10px 15px; font-size: 0.85rem; font-weight: bold; color: var(--text); cursor: pointer; text-align: left; transition: background 0.15s; }
         .dropdown-context-item:hover { background: rgba(0,0,0,0.04); }
@@ -155,7 +155,6 @@
         .msg-bubble-wrap.msg-incoming .msg-bubble-author-label { color: #777; }
         .msg-bubble-time-label { font-size: 0.65rem; text-align: right; opacity: 0.5; margin-top: 4px; }
 
-        /* FIXED & REMODLED: Dynamic Fluid Layout Alignment Container for Chat Inputs */
         .chat-viewport-input-footer { padding: 12px 15px calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--border); display: flex; align-items: center; background: var(--bg); gap: 10px; width: 100%; box-sizing: border-box; position: relative; }
         .chat-viewport-input-footer-wrapper { display: flex; align-items: center; width: 100%; position: relative; }
         .chat-viewport-input-footer input { margin-bottom: 0; padding: 12px 48px 12px 16px; font-size: 0.9rem; border-radius: 24px; width: 100%; display: block; }
@@ -360,8 +359,9 @@
     
     let directChatsUnsubscribe = null, groupChatsUnsubscribe = null, groupInvitesUnsubscribe = null, currentActiveRoomMessagesUnsubscribe = null;
     let currentRoomId = null, currentRoomType = null;
+    const dynamicFriendsSnapshotUnsubscribersMap = {};
 
-    /* NATIVE BROWSER BACK BUTTON ESCAPE PROTECTION FRAMEWORK MECHANISM UPGRADED */
+    /* NATIVE BROWSER BACK BUTTON ESCAPE PROTECTION FRAMEWORK MECHANISM INTERCEPTOR */
     const interceptNativeBackButtonExitGesture = () => {
         history.pushState({ platformDepthToken: true }, "");
     };
@@ -379,7 +379,7 @@
                 return;
             }
 
-            // FIXED: Cleaned exit alert syntax string to parse basic Yes/No confirmations
+            // FIXED: Standard simplified exit prompt containing clean basic Yes/No logic strings
             window.showModal("Exit Platform?", "Are you sure you want to leave the platform?", (choice) => {
                 if (choice === "Yes") {
                     currentUser = null;
@@ -399,10 +399,12 @@
         const confirmBtn = document.getElementById('modal-confirm-btn');
         const selectContainer = document.getElementById('modal-selection-buttons-container');
         const errorToast = document.getElementById('modal-error-toast');
+        const cancelBtn = document.getElementById('modal-cancel-btn');
 
         errorToast.style.display = 'none';
         errorToast.innerText = '';
         document.getElementById('modal-content').classList.remove('modal-error-shake');
+        cancelBtn.style.display = 'block';
 
         if (quickSelectOpts && Array.isArray(quickSelectOpts) && quickSelectOpts.length === 2) {
             input.style.display = 'none';
@@ -837,9 +839,6 @@
         });
     };
 
-    /* ------------------------------------------------------------- */
-    /* NEW: ADVANCED REALTIME THREE-DOT ACTIONS MANAGEMENT UTILITIES */
-    /* ------------------------------------------------------------- */
     window.toggleGroupHeaderDropdownMenu = (event) => {
         if (event) event.stopPropagation();
         const pane = document.getElementById('group-header-dropdown-box-panel');
@@ -847,11 +846,12 @@
         pane.style.display = active ? 'none' : 'flex';
     };
 
-    // Close options panel container instantly on structural window clicks
     document.addEventListener('click', () => {
-        document.getElementById('group-header-dropdown-box-panel').style.display = 'none';
+        const pane = document.getElementById('group-header-dropdown-box-panel');
+        if (pane) pane.style.display = 'none';
     });
 
+    /* FIXED: Adjusted single action layout with an "OK" button and zero cancel structures */
     window.triggerGroupMembersViewer = async () => {
         if (!currentRoomId || currentRoomType !== 'group') return;
         
@@ -864,6 +864,10 @@
         window.showModal("Group Members", "Fetching active group member profiles...", () => {
             window.closeModalViewExplicitly();
         });
+        
+        // Hide Cancel text node structurally to leave only the centered OK option active
+        document.getElementById('modal-cancel-btn').style.display = 'none';
+        document.getElementById('modal-confirm-btn').innerText = "OK";
         
         const modalBody = document.getElementById('modal-body');
         modalBody.innerHTML = `<div class="empty-chat-msg" style="font-size:0.85rem;">Resolving usernames...</div>`;
@@ -1068,19 +1072,42 @@
                 container.innerHTML = `<div class="empty-chat-msg">No friends chat history yet.</div>`;
                 return;
             }
+            
+            // Build temporary item rows to hold structural element allocations
             container.innerHTML = snap.docs.map(dSnap => {
                 const data = dSnap.data();
                 const peerUID = data.participants.find(id => id !== currentUser.uid) || "Unknown User";
-                const peerName = data.namesMapping ? (data.namesMapping[peerUID] || "Friend User") : "Friend User";
                 return `
-                    <div class="chat-item-row">
-                        <div class="chat-item-clickable-area" onclick="openActiveChatViewport('${data.chatId}', 'friend', '${peerName}')">
-                            <div class="chat-row-title">${peerName}</div>
+                    <div class="chat-item-row" id="friend-row-container-item-${dSnap.id}">
+                        <div class="chat-item-clickable-area" onclick="openActiveChatViewport('${data.chatId}', 'friend', document.getElementById('friend-text-span-node-${dSnap.id}').innerText)">
+                            <div class="chat-item-row-live-name" id="friend-text-span-node-${dSnap.id}">Loading Profile...</div>
                             <div class="chat-row-subtitle">UID: ${peerUID}</div>
                         </div>
                         <button class="btn-chat-row-delete" onclick="deleteFriendChatRow('${data.chatId}', event)">Delete</button>
                     </div>`;
             }).join('');
+
+            /* FIXED: Spawn standalone individual user collection listeners to hook profile updates instantly */
+            snap.docs.forEach(dSnap => {
+                const data = dSnap.data();
+                const peerUID = data.participants.find(id => id !== currentUser.uid);
+                if (!peerUID) return;
+
+                if (dynamicFriendsSnapshotUnsubscribersMap[dSnap.id]) dynamicFriendsSnapshotUnsubscribersMap[dSnap.id]();
+
+                dynamicFriendsSnapshotUnsubscribersMap[dSnap.id] = onSnapshot(doc(db, "users", peerUID), (userProfileDocSnap) => {
+                    const labelNode = document.getElementById(`friend-text-span-node-${dSnap.id}`);
+                    if (labelNode) {
+                        const liveUserName = (userProfileDocSnap.exists() && userProfileDocSnap.data().username) ? userProfileDocSnap.data().username : "Friend User";
+                        labelNode.innerText = liveUserName;
+                        
+                        // Dynamically updates window context titles if the user has the conversation viewport open
+                        if (currentRoomId === data.chatId) {
+                            document.getElementById('viewport-room-title').innerText = liveUserName;
+                        }
+                    }
+                });
+            });
         });
 
         const groupsQuery = query(collection(db, "groups"), where("members", "array-contains", currentUser.uid));
@@ -1201,6 +1228,11 @@
         if (directChatsUnsubscribe) directChatsUnsubscribe();
         if (groupChatsUnsubscribe) groupChatsUnsubscribe();
         if (groupInvitesUnsubscribe) groupInvitesUnsubscribe();
+        
+        Object.keys(dynamicFriendsSnapshotUnsubscribersMap).forEach(key => {
+            if (dynamicFriendsSnapshotUnsubscribersMap[key]) dynamicFriendsSnapshotUnsubscribersMap[key]();
+        });
+        
         signOut(auth); 
         location.reload(); 
     };
