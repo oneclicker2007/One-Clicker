@@ -335,6 +335,40 @@
     let directChatsUnsubscribe = null, groupChatsUnsubscribe = null, groupInvitesUnsubscribe = null, currentActiveRoomMessagesUnsubscribe = null;
     let currentRoomId = null, currentRoomType = null;
 
+    /* ------------------------------------------------------------- */
+    /* NATIVE BROWSER BACK BUTTON ESCAPE PROTECTION FRAMEWORK MECHANISM */
+    /* ------------------------------------------------------------- */
+    const interceptNativeBackButtonExitGesture = () => {
+        history.pushState({ platformDepthToken: true }, "");
+    };
+
+    window.addEventListener("popstate", (event) => {
+        // Intercept navigation pop requests if the user is logged into the application dashboard layout
+        if (currentUser) {
+            interceptNativeBackButtonExitGesture();
+            
+            // Check if full-screen sub-view windows are currently covering the interface
+            if (document.getElementById('active-chat-viewport-panel').style.display === 'flex') {
+                closeActiveChatViewport();
+                return;
+            }
+            if (document.getElementById('comments-overlay-panel').style.display === 'flex') {
+                closeCommentsOverlay();
+                return;
+            }
+
+            // Otherwise show a premium platform trap exit modal
+            window.showModal("Exit Platform?", "Are you sure you want to leave the platform? Unsaved progress could be interrupted.", (choice) => {
+                if (choice === "Exit Now") {
+                    currentUser = null;
+                    history.back();
+                } else {
+                    window.closeModalViewExplicitly();
+                }
+            }, false, ["Stay Here", "Exit Now"]);
+        }
+    });
+
     window.showModal = (title, body, confirmCallback, showInput = false, quickSelectOpts = null) => {
         document.getElementById('modal-title').innerText = title;
         document.getElementById('modal-body').innerText = body;
@@ -480,7 +514,7 @@
                         <div class="post-actions">
                             <svg class="action-icon ${hasLiked ? 'liked' : ''}" onclick="likePost('${postId}', this)" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                             <span class="like-count">${data.likeCount || 0}</span>
-                            <svg class="action-icon" onclick="openCommentsOverlay('${postId}', \`${textSnippet.replace(/'/g, "\\'")}\`)" viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+                            <svg class="action-icon" onclick="openCommentsOverlay('${postId}', \` ${textSnippet.replace(/'/g, "\\'")}\`)" viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
                             <span class="comment-count-label" onclick="openCommentsOverlay('${postId}', \`${textSnippet.replace(/'/g, "\\'")}\`)">${data.commentCount || 0}</span>
                             <button onclick="showModal('Delete', 'Delete post?', () => deletePost('${postId}'))" style="color:red;border:none;background:none;cursor:pointer">Delete</button>
                         </div>
@@ -863,7 +897,6 @@
         }
     };
 
-    /* FIXED: Integrated robust, reactive account scanning logic to intercept fake group invitations instantly */
     const launchGroupInvitationWorkflow = (groupId, groupName) => {
         window.showModal("Invite Friend", "Enter friend's registered Email ID or Account UID to invite them:", async (identityText) => {
             const target = identityText.trim();
@@ -874,7 +907,6 @@
             
             let targetUID = null;
             
-            // Validate against DB users layer first
             const directUserSnap = await getDoc(doc(db, "users", target));
             if(directUserSnap.exists()) {
                 targetUID = target;
@@ -886,7 +918,6 @@
                 } catch(e) {}
             }
 
-            // Interrupt pipeline if target user mapping validation breaks
             if(!targetUID) {
                 window.triggerModalErrorUI("Error: No registered user found with that Email or UID.");
                 return;
@@ -904,8 +935,9 @@
                 timestamp: serverTimestamp()
             });
             
+            // FIXED: Polished success modal message for clean consumer-facing platform environments
             setTimeout(() => {
-                window.showModal("Success", "Invitation transmitted successfully over the database channel!", () => {
+                window.showModal("Invitation Sent!", "Your friend has been invited to join the group channel.", () => {
                     window.closeModalViewExplicitly();
                 });
             }, 300);
@@ -1006,6 +1038,9 @@
             await loadProfile();
             initializeSynchronizedChatViews();
             
+            // Push active state protection history frame into local window scope
+            interceptNativeBackButtonExitGesture();
+
             await setDoc(doc(db, "users", user.uid), {
                 uid: user.uid,
                 email: user.email
