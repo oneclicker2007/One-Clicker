@@ -330,7 +330,7 @@
     let directChatsUnsubscribe = null, groupChatsUnsubscribe = null, groupInvitesUnsubscribe = null, currentActiveRoomMessagesUnsubscribe = null;
     let currentRoomId = null, currentRoomType = null;
 
-    /* Optimized ShowModal supporting Dynamic Direct Selection Buttons */
+    /* Optimized ShowModal supporting Dynamic Direct Selection Buttons WITHOUT Overlaps */
     window.showModal = (title, body, confirmCallback, showInput = false, quickSelectOpts = null) => {
         document.getElementById('modal-title').innerText = title;
         document.getElementById('modal-body').innerText = body;
@@ -351,12 +351,12 @@
             rightBtn.innerText = quickSelectOpts[1];
 
             leftBtn.onclick = () => {
-                confirmCallback(quickSelectOpts[0]);
                 document.getElementById('modal-overlay').style.display = 'none';
+                confirmCallback(quickSelectOpts[0]);
             };
             rightBtn.onclick = () => {
-                confirmCallback(quickSelectOpts[1]);
                 document.getElementById('modal-overlay').style.display = 'none';
+                confirmCallback(quickSelectOpts[1]);
             };
         } else {
             selectContainer.style.display = 'none';
@@ -364,8 +364,9 @@
             input.style.display = showInput ? 'block' : 'none';
             
             confirmBtn.onclick = () => { 
-                confirmCallback(input.value); 
+                const textVal = input.value;
                 document.getElementById('modal-overlay').style.display = 'none'; 
+                confirmCallback(textVal); 
                 input.value = '';
             };
         }
@@ -611,15 +612,15 @@
     document.getElementById('modal-comment-dispatch-trigger').onclick = window.dispatchModalComment;
 
     /* ------------------------------------------------------------- */
-    /* NEW CHAT ROUTER - DUAL-TACTILE ACTION BINDINGS CORRECTED      */
+    /* NEW CHAT ROUTER - DUAL-TACTILE ACTION BINDINGS FIXED CODE     */
     /* ------------------------------------------------------------- */
     
     window.triggerNewChatWorkflow = () => {
         window.showModal("Select Chat Type", "Choose an option below to connect with your platform:", (choice) => {
             if(choice === 'Friends Chat') {
-                triggerFriendsOnboardingFlow();
+                setTimeout(() => { triggerFriendsOnboardingFlow(); }, 300);
             } else if (choice === 'Group Chat') {
-                triggerGroupOnboardingFlow();
+                setTimeout(() => { triggerGroupOnboardingFlow(); }, 300);
             }
         }, false, ['Friends Chat', 'Group Chat']);
     };
@@ -675,39 +676,43 @@
     const triggerGroupOnboardingFlow = () => {
         window.showModal("Group Channels", "Select whether you want to launch a new group or merge into an existing one:", (choice) => {
             if(choice === 'Create New Group') {
-                window.showModal("Create Group", "Enter a title name for your group channel:", async (title) => {
-                    const name = title.trim();
-                    if(!name) return;
-                    
-                    const groupRef = await addDoc(collection(db, "groups"), {
-                        groupName: name,
-                        creator: currentUser.uid,
-                        members: [currentUser.uid],
-                        createdAt: serverTimestamp()
-                    });
-                    
-                    openActiveChatViewport(groupRef.id, 'group', name);
-                }, true);
-                document.getElementById('modal-input').placeholder = "Enter group name...";
+                setTimeout(() => {
+                    window.showModal("Create Group", "Enter a title name for your group channel:", async (title) => {
+                        const name = title.trim();
+                        if(!name) return;
+                        
+                        const groupRef = await addDoc(collection(db, "groups"), {
+                            groupName: name,
+                            creator: currentUser.uid,
+                            members: [currentUser.uid],
+                            createdAt: serverTimestamp()
+                        });
+                        
+                        openActiveChatViewport(groupRef.id, 'group', name);
+                    }, true);
+                    document.getElementById('modal-input').placeholder = "Enter group name...";
+                }, 300);
             } else if (choice === 'Join Existing ID') {
-                window.showModal("Join Group Channel", "Enter the exact Group ID code you received:", async (gId) => {
-                    const groupId = gId.trim();
-                    if(!groupId) return;
-                    
-                    const groupDocRef = doc(db, "groups", groupId);
-                    const checkSnap = await getDoc(groupDocRef);
-                    if(!checkSnap.exists()) {
-                        alert("No group channel matching that ID was discovered.");
-                        return;
-                    }
-                    
-                    await setDoc(groupDocRef, {
-                        members: arrayUnion(currentUser.uid)
-                    }, { merge: true });
-                    
-                    openActiveChatViewport(groupId, 'group', checkSnap.data().groupName || "Group Chat");
-                }, true);
-                document.getElementById('modal-input').placeholder = "Enter Group ID string...";
+                setTimeout(() => {
+                    window.showModal("Join Group Channel", "Enter the exact Group ID code you received:", async (gId) => {
+                        const groupId = gId.trim();
+                        if(!groupId) return;
+                        
+                        const groupDocRef = doc(db, "groups", groupId);
+                        const checkSnap = await getDoc(groupDocRef);
+                        if(!checkSnap.exists()) {
+                            alert("No group channel matching that ID was discovered.");
+                            return;
+                        }
+                        
+                        await setDoc(groupDocRef, {
+                            members: arrayUnion(currentUser.uid)
+                        }, { merge: true });
+                        
+                        openActiveChatViewport(groupId, 'group', checkSnap.data().groupName || "Group Chat");
+                    }, true);
+                    document.getElementById('modal-input').placeholder = "Enter Group ID string...";
+                }, 300);
             }
         }, false, ['Create New Group', 'Join Existing ID']);
     };
