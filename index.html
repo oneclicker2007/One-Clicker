@@ -27,26 +27,34 @@
         .post-timestamp { font-weight: normal; color: #aaa; margin-left: 5px; }
         .post-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; word-break: break-word; }
         
-        .post-actions { display: flex; align-items: center; gap: 15px; margin-top: 10px; border-bottom: 1px solid transparent; padding-bottom: 0; }
-        .post-actions.has-comments-open { border-color: var(--border); padding-bottom: 10px; margin-bottom: 10px; }
+        .post-actions { display: flex; align-items: center; gap: 15px; margin-top: 10px; padding-bottom: 0; }
         .action-icon { cursor: pointer; width: 24px; height: 24px; fill: #777; transition: fill 0.1s ease; }
         .action-icon.liked { fill: #000 !important; }
         .like-count, .comment-count-label { font-size: 0.9rem; font-weight: bold; margin-left: -10px; color: var(--text); }
         .comment-count-label { margin-left: -10px; cursor: pointer; }
 
-        /* Comments Layout Styling */
-        .comment-section-wrapper { display: none; margin-top: 10px; background: rgba(0,0,0,0.02); [data-theme="dark"] & { background: rgba(255,255,255,0.02); } border-radius: 6px; padding: 10px; }
-        .comment-section-wrapper.active { display: block; }
-        .comments-stream { max-height: 200px; overflow-y: auto; margin-bottom: 10px; }
-        .single-comment-item { font-size: 0.85rem; border-bottom: 1px dashed var(--border); padding: 6px 0; word-break: break-word; }
-        .single-comment-item:last-child { border-bottom: none; }
-        .comment-author-meta { font-weight: bold; color: #555; font-size: 0.75rem; margin-bottom: 2px; }
+        /* Instagram Style Modal Comments Viewport System */
+        #comments-overlay-panel { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 3000; display: none; justify-content: center; align-items: flex-end; }
+        .comments-modal-box { width: 100%; max-width: 600px; background: var(--bg); border-top-left-radius: 20px; border-top-right-radius: 20px; height: 80vh; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out; box-sizing: border-box; position: relative; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         
-        .comment-input-box-wrapper { display: flex; gap: 8px; align-items: center; margin-top: 5px; position: relative; width: 100%; box-sizing: border-box; }
-        .comment-input-box-wrapper input { margin-bottom: 0; padding: 8px 40px 8px 12px; font-size: 0.85rem; width: 100%; }
-        .btn-comment-send-icon { background: none; border: none; cursor: pointer; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); padding: 4px; display: flex; align-items: center; justify-content: center; }
-        .btn-comment-send-icon svg { width: 20px; height: 20px; fill: var(--text); transition: fill 0.2s; }
-        .btn-comment-send-icon:hover svg { fill: #000; }
+        .comments-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--border); }
+        .comments-modal-header h3 { margin: 0; font-size: 1.2rem; font-weight: 700; color: var(--text); }
+        .close-comments-modal-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text); font-weight: bold; padding: 0 5px; }
+        
+        .comments-modal-parent-snippet { padding: 15px 20px; background: rgba(0,0,0,0.01); [data-theme="dark"] & { background: rgba(255,255,255,0.01); } border-bottom: 1px solid var(--border); font-size: 0.9rem; word-break: break-word; max-height: 80px; overflow-y: auto; }
+        .comments-modal-body-stream { flex: 1; overflow-y: auto; padding: 15px 20px; box-sizing: border-box; }
+        
+        .modal-comment-item { border-bottom: 1px dashed var(--border); padding: 10px 0; word-break: break-word; }
+        .modal-comment-item:last-child { border-bottom: none; }
+        .modal-comment-meta { font-weight: bold; color: #555; font-size: 0.8rem; margin-bottom: 3px; }
+        
+        .comments-modal-footer-input-bar { padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--border); background: var(--bg); display: flex; align-items: center; gap: 10px; position: relative; }
+        .comments-modal-footer-input-bar input { margin-bottom: 0; padding: 10px 45px 10px 14px; font-size: 0.9rem; border-radius: 24px; background: var(--bg); color: var(--text); }
+        
+        .btn-modal-comment-send { background: none; border: none; cursor: pointer; position: absolute; right: 28px; top: calc(12px + 21px); transform: translateY(-50%); display: flex; align-items: center; justify-content: center; padding: 4px; }
+        .btn-modal-comment-send svg { width: 22px; height: 22px; fill: var(--text); transition: transform 0.1s; }
+        .btn-modal-comment-send:active svg { transform: scale(0.9); }
 
         .profile-pic { width: 80px; height: 80px; background: #eee; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
         .profile-pic svg { width: 50px; height: 50px; fill: #777; }
@@ -100,6 +108,23 @@
     </style>
 </head>
 <body>
+
+<div id="comments-overlay-panel" onclick="if(event.target === this) closeCommentsOverlay()">
+    <div class="comments-modal-box">
+        <div class="comments-modal-header">
+            <h3>Comments</h3>
+            <button class="close-comments-modal-btn" onclick="closeCommentsOverlay()">&times;</button>
+        </div>
+        <div class="comments-modal-parent-snippet" id="modal-parent-post-snippet"></div>
+        <div class="comments-modal-body-stream" id="modal-comments-scroller-view"></div>
+        <div class="comments-modal-footer-input-bar">
+            <input type="text" id="modal-comment-text-field" placeholder="Add a comment... (Max 100)" maxlength="100" onkeydown="if(event.key === 'Enter') dispatchModalComment()">
+            <button class="btn-modal-comment-send" id="modal-comment-dispatch-trigger">
+                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+        </div>
+    </div>
+</div>
 
 <div id="modal-overlay">
     <div class="modal-box" id="modal-content">
@@ -228,7 +253,7 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     let currentUser = null, currentDisplayName = "", placeholderInterval = null;
-    const activeCommentListeners = {};
+    let activeCommentsUnsubscribe = null, activeOpenedPostId = null;
 
     window.showModal = (title, body, confirmCallback, showInput = false) => {
         document.getElementById('modal-title').innerText = title;
@@ -363,50 +388,62 @@
         }
     };
 
-    window.toggleCommentsView = (postId) => {
-        const actionHeader = document.querySelector(`.post-card[data-id="${postId}"] .post-actions`);
-        const wrapper = document.getElementById(`comments-wrapper-${postId}`);
-        const container = document.getElementById(`comments-stream-${postId}`);
+    /* Instagram Overlay Bottom Sheet Display Component Engine */
+    window.openCommentsOverlay = async (postId, parentSnippetText) => {
+        activeOpenedPostId = postId;
+        document.getElementById('modal-parent-post-snippet').innerHTML = `<strong>Context:</strong> "${parentSnippetText.replace(/</g, "&lt;")}"`;
+        document.getElementById('comments-overlay-panel').style.display = 'flex';
+        document.getElementById('modal-comment-text-field').focus();
         
-        const opening = !wrapper.classList.contains('active');
-        wrapper.classList.toggle('active', opening);
-        actionHeader.classList.toggle('has-comments-open', opening);
+        const container = document.getElementById('modal-comments-scroller-view');
+        container.innerHTML = `<div class="empty-chat-msg" style="font-size:0.85rem;">Loading conversations...</div>`;
 
-        if (opening && !activeCommentListeners[postId]) {
-            const commentsQuery = query(collection(db, `posts/${postId}/comments`), orderBy("createdAt", "asc"));
-            activeCommentListeners[postId] = onSnapshot(commentsQuery, (snap) => {
-                if (snap.empty) {
-                    container.innerHTML = `<div class="empty-chat-msg" style="font-size:0.8rem;padding:5px 0;">No comments yet. Be the first to reply!</div>`;
-                    return;
+        if (activeCommentsUnsubscribe) activeCommentsUnsubscribe();
+
+        const commentsQuery = query(collection(db, `posts/${postId}/comments`), orderBy("createdAt", "asc"));
+        activeCommentsUnsubscribe = onSnapshot(commentsQuery, (snap) => {
+            if (snap.empty) {
+                container.innerHTML = `<div class="empty-chat-msg" style="font-size:0.85rem;padding:10px 0;">No comments yet. Start the conversation below!</div>`;
+                return;
+            }
+            container.innerHTML = snap.docs.map(docSnap => {
+                const cData = docSnap.data();
+                let cTime = "";
+                if (cData.createdAt) {
+                    const dObj = cData.createdAt.toDate();
+                    cTime = " • " + dObj.toLocaleDateString() + " " + dObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 }
-                container.innerHTML = snap.docs.map(docSnap => {
-                    const cData = docSnap.data();
-                    let cTime = "";
-                    if (cData.createdAt) {
-                        const dObj = cData.createdAt.toDate();
-                        cTime = " • " + dObj.toLocaleDateString() + " " + dObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    }
-                    return `
-                        <div class="single-comment-item">
-                            <div class="comment-author-meta">${cData.authorName || 'Anonymous'}<span style="font-weight:normal;color:#aaa;">${cTime}</span></div>
-                            <div style="color:var(--text); font-size:0.85rem;">${cData.content.replace(/</g, "&lt;")}</div>
-                        </div>`;
-                }).join('');
-                container.scrollTop = container.scrollHeight;
-            });
-        }
+                return `
+                    <div class="modal-comment-item">
+                        <div class="modal-comment-meta">${cData.authorName || 'Anonymous'}<span style="font-weight:normal;color:#aaa;">${cTime}</span></div>
+                        <div style="color:var(--text); font-size:0.9rem; margin-top:2px;">${cData.content.replace(/</g, "&lt;")}</div>
+                    </div>`;
+            }).join('');
+            container.scrollTop = container.scrollHeight;
+        }, (err) => {
+            console.error("Comments connection snapshot error:", err);
+        });
     };
 
-    window.submitComment = async (postId) => {
-        const inputEl = document.getElementById(`comment-input-${postId}`);
+    window.closeCommentsOverlay = () => {
+        document.getElementById('comments-overlay-panel').style.display = 'none';
+        document.getElementById('modal-comment-text-field').value = '';
+        if (activeCommentsUnsubscribe) { activeCommentsUnsubscribe(); activeCommentsUnsubscribe = null; }
+        activeOpenedPostId = null;
+    };
+
+    window.dispatchModalComment = async () => {
+        if (!activeOpenedPostId || !currentUser) return;
+        const inputEl = document.getElementById('modal-comment-text-field');
         const val = inputEl.value.trim();
-        if (!val || !currentUser) return;
-        
+        if (!val) return;
+
         inputEl.value = '';
-        const postRef = doc(db, "posts", postId);
-        
+        const currentTargetPostId = activeOpenedPostId;
+        const postRef = doc(db, "posts", currentTargetPostId);
+
         try {
-            await addDoc(collection(db, `posts/${postId}/comments`), {
+            await addDoc(collection(db, `posts/${currentTargetPostId}/comments`), {
                 content: val,
                 authorUID: currentUser.uid,
                 authorName: currentDisplayName,
@@ -416,9 +453,11 @@
                 transaction.update(postRef, { commentCount: increment(1) });
             });
         } catch (e) {
-            console.error("Failed handling comment allocation:", e);
+            console.error("Atomic transaction constraint fault on comment append:", e);
         }
     };
+
+    document.getElementById('modal-comment-dispatch-trigger').onclick = window.dispatchModalComment;
 
     window.reportPost = async (postId, reason) => {
         if(!reason) return;
@@ -450,6 +489,8 @@
                         formattedTime = dateObj.toLocaleDateString() + " " + dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     }
                     
+                    const textEscapedSnippet = data.content.substring(0, 45) + (data.content.length > 45 ? "..." : "");
+                    
                     const card = `
                         <div class="post-card" data-id="${postId}">
                             <div class="post-author">${data.authorName || 'Anonymous'}<span class="post-timestamp"> • ${formattedTime}</span></div>
@@ -459,21 +500,11 @@
                                 <svg class="action-icon ${hasLiked ? 'liked' : ''}" onclick="likePost('${postId}', this)" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                                 <span class="like-count">${data.likeCount || 0}</span>
                                 
-                                <svg class="action-icon" onclick="toggleCommentsView('${postId}')" viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
-                                <span class="comment-count-label" onclick="toggleCommentsView('${postId}')">${data.commentCount || 0}</span>
+                                <svg class="action-icon" onclick="openCommentsOverlay('${postId}', \`${textEscapedSnippet.replace(/'/g, "\\'")}\`)" viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+                                <span class="comment-count-label" onclick="openCommentsOverlay('${postId}', \`${textEscapedSnippet.replace(/'/g, "\\'")}\`)">${data.commentCount || 0}</span>
 
                                 <svg class="action-icon" onclick="showModal('Report', 'Reason for reporting?', (val) => reportPost('${postId}', val), true)" viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
                                 ${data.authorUID === user.uid ? `<button onclick="showModal('Delete', 'Delete post?', () => deletePost('${postId}'))" style="color:red;border:none;background:none;cursor:pointer">Delete</button>` : ''}
-                            </div>
-                            
-                            <div class="comment-section-wrapper" id="comments-wrapper-${postId}">
-                                <div class="comments-stream" id="comments-stream-${postId}"></div>
-                                <div class="comment-input-box-wrapper">
-                                    <input type="text" id="comment-input-${postId}" placeholder="Write a comment... (Max 100)" maxlength="100">
-                                    <button class="btn-comment-send-icon" onclick="submitComment('${postId}')">
-                                        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                                    </button>
-                                </div>
                             </div>
                         </div>`;
                     postCardsHTML.push(card);
@@ -484,7 +515,7 @@
     });
 
     window.deletePost = async (id) => { 
-        if(activeCommentListeners[id]) { activeCommentListeners[id](); delete activeCommentListeners[id]; }
+        if (activeOpenedPostId === id) closeCommentsOverlay();
         await deleteDoc(doc(db, "posts", id)); 
     };
     
