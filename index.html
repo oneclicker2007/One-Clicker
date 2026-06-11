@@ -16,6 +16,11 @@
         .btn { width: 100%; padding: 12px; background: #000; color: #fff; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; margin-top: 10px; }
         .btn-cancel { width: 100%; padding: 12px; background: #e0e0e0; color: #000; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; margin-top: 10px; }
         
+        /* Premium Feature UI Component Styling */
+        .btn-premium-badge { background: linear-gradient(135deg, #111111 0%, #2c2c2c 100%); color: #d4af37; border: 1px solid #d4af37; width: 100%; padding: 12px; font-weight: bold; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin: 10px 0 15px 0; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.15); transition: opacity 0.2s; box-sizing: border-box; }
+        .btn-premium-badge:active { opacity: 0.8; }
+        .btn-premium-badge svg { width: 16px; height: 16px; fill: #d4af37; }
+
         .modal-inner-error-pane { display: none; background: #fff5f5; border-left: 4px solid #d32f2f; color: #d32f2f; padding: 10px 12px; margin-bottom: 12px; border-radius: 4px; font-size: 0.85rem; font-weight: 500; text-align: left; line-height: 1.4; [data-theme="dark"] & { background: rgba(211, 47, 47, 0.1); } }
         .modal-error-shake { animation: modalShake 0.3s ease-in-out; }
         @keyframes modalShake {
@@ -99,7 +104,7 @@
         .btn-new-chat { background: #000; color: #fff; border: none; padding: 12px 20px; font-weight: bold; border-radius: 30px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 0.95rem; transition: background 0.2s ease; }
         .btn-new-chat svg { width: 16px; height: 16px; fill: #fff; }
 
-        .feed-header-wrapper { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 1rem; box-sizing: border-box; }
+        .feed-header-wrapper { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 0.5rem; box-sizing: border-box; }
         .feed-header-wrapper h1 { margin: 0; }
         .feed-actions-right { display: flex; align-items: center; gap: 12px; }
         
@@ -262,6 +267,12 @@
                 </a>
             </div>
         </div>
+        
+        <button class="btn-premium-badge" onclick="window.showModal('Premium Membership', 'Premium activation processing links will be distributed soon!', window.closeModalViewExplicitly)">
+            <svg viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm0 4l6.3 11H5.7L12 6zm-1 8h2v2h-2v-2zm0-4h2v2h-2V10z"/></svg>
+            Get Premium
+        </button>
+
         <div id="feed-container"></div>
     </div>
     
@@ -271,7 +282,7 @@
             
             <div class="chat-tabs-container">
                 <div class="chat-tab-item active" id="tab-friends" onclick="switchChatTab('friends')">Friends</div>
-                <div class="chat-tab-item" id="tab-group" onclick="switchChatTab('group')">Group</div>
+                <div class="chat-tab-item" id="tab-group" onclick="switchChatTab('group')">Groups</div>
             </div>
 
             <div class="chat-pane active" id="pane-friends">
@@ -310,6 +321,12 @@
                 <input type="text" id="username-input" maxlength="20">
                 <button class="btn" onclick="updateProfile()">Save</button>
             </div>
+            
+            <button class="btn-premium-badge" onclick="window.showModal('Premium Membership', 'Premium activation processing links will be distributed soon!', window.closeModalViewExplicitly)">
+                <svg viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm0 4l6.3 11H5.7L12 6zm-1 8h2v2h-2v-2zm0-4h2v2h-2V10z"/></svg>
+                Get Premium
+            </button>
+
             <button class="btn" onclick="showModal('Logout', 'Are you sure you want to logout?', executeLogout)" style="background:#d32f2f; margin-top: 20px;">Logout</button>
             
             <div class="profile-feed-heading">My Posts</div>
@@ -381,7 +398,6 @@
             window.showModal("Exit Platform?", "Are you sure you want to leave the platform?", (choice) => {
                 if (choice === "Yes") {
                     currentUser = null;
-                    // Performs an instant standard tab depth release history closure exit loop
                     window.location.href = "about:blank";
                 } else {
                     window.closeModalViewExplicitly();
@@ -390,7 +406,6 @@
         }
     });
 
-    /* FIXED: Complete modal controller architecture to prevent bottom grey duplicate buttons */
     window.showModal = (title, body, confirmCallback, showInput = false, quickSelectOpts = null) => {
         document.getElementById('modal-title').innerText = title;
         document.getElementById('modal-body').innerText = body;
@@ -408,7 +423,7 @@
         if (quickSelectOpts && Array.isArray(quickSelectOpts) && quickSelectOpts.length === 2) {
             input.style.display = 'none';
             confirmBtn.style.display = 'none';
-            cancelBtn.style.display = 'none'; // CRITICAL FIX: Hide the bottom grey double button!
+            cancelBtn.style.display = 'none'; 
             selectContainer.style.display = 'flex';
 
             const leftBtn = document.getElementById('modal-select-opt-left-btn');
@@ -426,7 +441,7 @@
         } else {
             selectContainer.style.display = 'none';
             confirmBtn.style.display = 'block';
-            cancelBtn.style.display = 'block'; // Restore only for standard text inputs
+            cancelBtn.style.display = 'block'; 
             input.style.display = showInput ? 'block' : 'none';
             
             confirmBtn.onclick = () => { 
@@ -756,7 +771,6 @@
         document.getElementById('modal-input').placeholder = "Friend's Email or Account UID";
     };
 
-    /* FIXED: Complete validation intercept framework for joining existing Group IDs */
     const triggerGroupOnboardingFlow = () => {
         window.showModal("Group Channels", "Select whether you want to launch a new group or merge into an existing one:", (choice) => {
             if(choice === 'Create New Group') {
@@ -793,7 +807,6 @@
                             const groupDocRef = doc(db, "groups", groupId);
                             const checkSnap = await getDoc(groupDocRef);
                             
-                            // FIXED & CRITICAL HARD STOP: Halts flow instantly and errors out cleanly
                             if(!checkSnap.exists()) {
                                 window.triggerModalErrorUI("Error: No group channel matching that ID was found.");
                                 return;
