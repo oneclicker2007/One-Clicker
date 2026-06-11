@@ -130,13 +130,22 @@
         .btn-chat-row-delete:hover { text-decoration: underline; }
 
         #active-chat-viewport-panel { position: fixed; inset: 0; background: var(--bg); z-index: 2500; display: none; flex-direction: column; box-sizing: border-box; }
-        .chat-viewport-header { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); gap: 15px; }
+        .chat-viewport-header { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); gap: 12px; position: relative; }
         .btn-viewport-back { background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 4px; }
         .btn-viewport-back svg { width: 24px; height: 24px; fill: var(--text); }
-        .viewport-header-meta-wrap { flex: 1; }
-        .viewport-header-title { font-weight: bold; font-size: 1.1rem; margin: 0; }
-        .viewport-header-id-indicator { font-size: 0.75rem; color: #777; }
-        .btn-group-invite-trigger { background: #000; color: #fff; border: none; font-size: 0.75rem; font-weight: bold; padding: 6px 12px; border-radius: 15px; cursor: pointer; }
+        .viewport-header-meta-wrap { flex: 1; min-width: 0; }
+        .viewport-header-title { font-weight: bold; font-size: 1.1rem; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .viewport-header-id-indicator { font-size: 0.75rem; color: #777; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        .viewport-header-actions-right { display: flex; align-items: center; gap: 10px; }
+        .btn-group-invite-trigger { background: #000; color: #fff; border: none; fill: #fff; font-size: 0.75rem; font-weight: bold; padding: 6px 12px; border-radius: 15px; cursor: pointer; white-space: nowrap; }
+        .btn-group-3dot-menu-trigger { background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 6px; position: relative; }
+        .btn-group-3dot-menu-trigger svg { width: 20px; height: 20px; fill: var(--text); }
+
+        /* Premium Dropdown Context Box Layout */
+        .group-header-dropdown-context-box { display: none; position: absolute; right: 15px; top: 55px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 160px; z-index: 2900; flex-direction: column; padding: 5px 0; }
+        .dropdown-context-item { padding: 10px 15px; font-size: 0.85rem; font-weight: bold; color: var(--text); cursor: pointer; text-align: left; transition: background 0.15s; }
+        .dropdown-context-item:hover { background: rgba(0,0,0,0.04); }
 
         .chat-viewport-messages-stream { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box; background: rgba(0,0,0,0.01); }
         .msg-bubble-wrap { max-width: 75%; padding: 10px 14px; border-radius: 12px; font-size: 0.9rem; word-break: break-word; line-height: 1.4; position: relative; }
@@ -146,10 +155,15 @@
         .msg-bubble-wrap.msg-incoming .msg-bubble-author-label { color: #777; }
         .msg-bubble-time-label { font-size: 0.65rem; text-align: right; opacity: 0.5; margin-top: 4px; }
 
-        .chat-viewport-input-footer { padding: 12px 15px calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; position: relative; background: var(--bg); }
-        .chat-viewport-input-footer input { margin-bottom: 0; padding: 10px 45px 10px 14px; font-size: 0.9rem; border-radius: 24px; }
-        .btn-viewport-message-send { background: none; border: none; cursor: pointer; position: absolute; right: 24px; top: 21px; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; padding: 4px; }
+        /* FIXED & REMODLED: Dynamic Fluid Layout Alignment Container for Chat Inputs */
+        .chat-viewport-input-footer { padding: 12px 15px calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--border); display: flex; align-items: center; background: var(--bg); gap: 10px; width: 100%; box-sizing: border-box; position: relative; }
+        .chat-viewport-input-footer-wrapper { display: flex; align-items: center; width: 100%; position: relative; }
+        .chat-viewport-input-footer input { margin-bottom: 0; padding: 12px 48px 12px 16px; font-size: 0.9rem; border-radius: 24px; width: 100%; display: block; }
+        .btn-viewport-message-send { background: none; border: none; cursor: pointer; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; padding: 4px; z-index: 5; }
         .btn-viewport-message-send svg { width: 22px; height: 22px; fill: var(--text); }
+        
+        .member-list-modal-item { text-align: left; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 0.85rem; }
+        .member-list-modal-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
@@ -180,14 +194,26 @@
             <div class="viewport-header-title" id="viewport-room-title">Loading Room...</div>
             <div class="viewport-header-id-indicator" id="viewport-room-id-tag">ID: --</div>
         </div>
-        <button class="btn-group-invite-trigger" id="viewport-group-invite-action-btn" style="display:none;">Invite Member</button>
+        <div class="viewport-header-actions-right">
+            <button class="btn-group-invite-trigger" id="viewport-group-invite-action-btn" style="display:none;">Invite Member</button>
+            <button class="btn-group-3dot-menu-trigger" id="viewport-group-3dot-action-btn" style="display:none;" onclick="toggleGroupHeaderDropdownMenu(event)">
+                <svg viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+            </button>
+        </div>
+        
+        <div class="group-header-dropdown-context-box" id="group-header-dropdown-box-panel">
+            <div class="dropdown-context-item" onclick="triggerGroupMembersViewer()">All Members</div>
+            <div class="dropdown-context-item" onclick="triggerGroupRenamingWorkflow()">Group Settings</div>
+        </div>
     </div>
     <div class="chat-viewport-messages-stream" id="viewport-messages-container"></div>
     <div class="chat-viewport-input-footer">
-        <input type="text" id="viewport-message-input-field" placeholder="Type a message... (Max 100)" maxlength="100" onkeydown="if(event.key === 'Enter') dispatchDirectChatMessage()">
-        <button class="btn-viewport-message-send" onclick="dispatchDirectChatMessage()">
-            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-        </button>
+        <div class="chat-viewport-input-footer-wrapper">
+            <input type="text" id="viewport-message-input-field" placeholder="Type a message... (Max 100)" maxlength="100" onkeydown="if(event.key === 'Enter') dispatchDirectChatMessage()">
+            <button class="btn-viewport-message-send" onclick="dispatchDirectChatMessage()">
+                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+        </div>
     </div>
 </div>
 
@@ -335,19 +361,15 @@
     let directChatsUnsubscribe = null, groupChatsUnsubscribe = null, groupInvitesUnsubscribe = null, currentActiveRoomMessagesUnsubscribe = null;
     let currentRoomId = null, currentRoomType = null;
 
-    /* ------------------------------------------------------------- */
-    /* NATIVE BROWSER BACK BUTTON ESCAPE PROTECTION FRAMEWORK MECHANISM */
-    /* ------------------------------------------------------------- */
+    /* NATIVE BROWSER BACK BUTTON ESCAPE PROTECTION FRAMEWORK MECHANISM UPGRADED */
     const interceptNativeBackButtonExitGesture = () => {
         history.pushState({ platformDepthToken: true }, "");
     };
 
     window.addEventListener("popstate", (event) => {
-        // Intercept navigation pop requests if the user is logged into the application dashboard layout
         if (currentUser) {
             interceptNativeBackButtonExitGesture();
             
-            // Check if full-screen sub-view windows are currently covering the interface
             if (document.getElementById('active-chat-viewport-panel').style.display === 'flex') {
                 closeActiveChatViewport();
                 return;
@@ -357,15 +379,15 @@
                 return;
             }
 
-            // Otherwise show a premium platform trap exit modal
-            window.showModal("Exit Platform?", "Are you sure you want to leave the platform? Unsaved progress could be interrupted.", (choice) => {
-                if (choice === "Exit Now") {
+            // FIXED: Cleaned exit alert syntax string to parse basic Yes/No confirmations
+            window.showModal("Exit Platform?", "Are you sure you want to leave the platform?", (choice) => {
+                if (choice === "Yes") {
                     currentUser = null;
                     history.back();
                 } else {
                     window.closeModalViewExplicitly();
                 }
-            }, false, ["Stay Here", "Exit Now"]);
+            }, false, ["No", "Yes"]);
         }
     });
 
@@ -514,7 +536,7 @@
                         <div class="post-actions">
                             <svg class="action-icon ${hasLiked ? 'liked' : ''}" onclick="likePost('${postId}', this)" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                             <span class="like-count">${data.likeCount || 0}</span>
-                            <svg class="action-icon" onclick="openCommentsOverlay('${postId}', \` ${textSnippet.replace(/'/g, "\\'")}\`)" viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+                            <svg class="action-icon" onclick="openCommentsOverlay('${postId}', \`${textSnippet.replace(/'/g, "\\'")}\`)" viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
                             <span class="comment-count-label" onclick="openCommentsOverlay('${postId}', \`${textSnippet.replace(/'/g, "\\'")}\`)">${data.commentCount || 0}</span>
                             <button onclick="showModal('Delete', 'Delete post?', () => deletePost('${postId}'))" style="color:red;border:none;background:none;cursor:pointer">Delete</button>
                         </div>
@@ -815,6 +837,80 @@
         });
     };
 
+    /* ------------------------------------------------------------- */
+    /* NEW: ADVANCED REALTIME THREE-DOT ACTIONS MANAGEMENT UTILITIES */
+    /* ------------------------------------------------------------- */
+    window.toggleGroupHeaderDropdownMenu = (event) => {
+        if (event) event.stopPropagation();
+        const pane = document.getElementById('group-header-dropdown-box-panel');
+        const active = pane.style.display === 'flex';
+        pane.style.display = active ? 'none' : 'flex';
+    };
+
+    // Close options panel container instantly on structural window clicks
+    document.addEventListener('click', () => {
+        document.getElementById('group-header-dropdown-box-panel').style.display = 'none';
+    });
+
+    window.triggerGroupMembersViewer = async () => {
+        if (!currentRoomId || currentRoomType !== 'group') return;
+        
+        const targetGId = currentRoomId;
+        const groupSnap = await getDoc(doc(db, "groups", targetGId));
+        if (!groupSnap.exists()) return;
+        
+        const membersListArray = groupSnap.data().members || [];
+        
+        window.showModal("Group Members", "Fetching active group member profiles...", () => {
+            window.closeModalViewExplicitly();
+        });
+        
+        const modalBody = document.getElementById('modal-body');
+        modalBody.innerHTML = `<div class="empty-chat-msg" style="font-size:0.85rem;">Resolving usernames...</div>`;
+        
+        try {
+            const compiledElements = [];
+            for (const memberUID of membersListArray) {
+                const uSnap = await getDoc(doc(db, "users", memberUID));
+                const name = uSnap.exists() ? (uSnap.data().username || "Registered User") : "Anonymous Member";
+                const email = uSnap.exists() ? (uSnap.data().email || "No Email Provided") : "Hidden Core Profile";
+                
+                compiledElements.push(`
+                    <div class="member-list-modal-item">
+                        <strong>Name:</strong> ${name}<br>
+                        <strong>Email:</strong> ${email}<br>
+                        <span style="color:#777; font-size:0.75rem;"><strong>UID:</strong> ${memberUID}</span>
+                    </div>`);
+            }
+            modalBody.innerHTML = `<div style="max-height: 250px; overflow-y:auto; padding-right:5px;">${compiledElements.join('')}</div>`;
+        } catch(e) {
+            modalBody.innerText = "Failed to resolve system group members details.";
+        }
+    };
+
+    window.triggerGroupRenamingWorkflow = () => {
+        if (!currentRoomId || currentRoomType !== 'group') return;
+        const targetGId = currentRoomId;
+        
+        window.showModal("Group Settings", "Modify your current Group Channel Title below:", async (newGroupName) => {
+            const cleanedTitle = newGroupName.trim();
+            if (!cleanedTitle) {
+                window.triggerModalErrorUI("Error: Group name field cannot be empty.");
+                return;
+            }
+            
+            window.closeModalViewExplicitly();
+            try {
+                await setDoc(doc(db, "groups", targetGId), { groupName: cleanedTitle }, { merge: true });
+                document.getElementById('viewport-room-title').innerText = cleanedTitle;
+            } catch(e) {
+                console.error("Group re-indexing operation fault:", e);
+            }
+        }, true);
+        
+        document.getElementById('modal-input').placeholder = "Enter new group title...";
+    };
+
     window.openActiveChatViewport = (roomId, roomType, roomTitle) => {
         currentRoomId = roomId;
         currentRoomType = roomType;
@@ -825,11 +921,16 @@
         document.getElementById('viewport-message-input-field').focus();
         
         const inviteBtn = document.getElementById('viewport-group-invite-action-btn');
+        const dotBtn = document.getElementById('viewport-group-3dot-action-btn');
+        document.getElementById('group-header-dropdown-box-panel').style.display = 'none';
+
         if(roomType === 'group') {
             inviteBtn.style.display = 'block';
+            dotBtn.style.display = 'flex';
             inviteBtn.onclick = () => launchGroupInvitationWorkflow(roomId, roomTitle);
         } else {
             inviteBtn.style.display = 'none';
+            dotBtn.style.display = 'none';
         }
 
         const messagesContainer = document.getElementById('viewport-messages-container');
@@ -867,6 +968,7 @@
     window.closeActiveChatViewport = () => {
         document.getElementById('active-chat-viewport-panel').style.display = 'none';
         document.getElementById('viewport-message-input-field').value = '';
+        document.getElementById('group-header-dropdown-box-panel').style.display = 'none';
         if (currentActiveRoomMessagesUnsubscribe) { currentActiveRoomMessagesUnsubscribe(); currentActiveRoomMessagesUnsubscribe = null; }
         currentRoomId = null;
         currentRoomType = null;
@@ -906,7 +1008,6 @@
             }
             
             let targetUID = null;
-            
             const directUserSnap = await getDoc(doc(db, "users", target));
             if(directUserSnap.exists()) {
                 targetUID = target;
@@ -935,7 +1036,6 @@
                 timestamp: serverTimestamp()
             });
             
-            // FIXED: Polished success modal message for clean consumer-facing platform environments
             setTimeout(() => {
                 window.showModal("Invitation Sent!", "Your friend has been invited to join the group channel.", () => {
                     window.closeModalViewExplicitly();
@@ -1038,7 +1138,6 @@
             await loadProfile();
             initializeSynchronizedChatViews();
             
-            // Push active state protection history frame into local window scope
             interceptNativeBackButtonExitGesture();
 
             await setDoc(doc(db, "users", user.uid), {
