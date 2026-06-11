@@ -361,7 +361,6 @@
     let currentRoomId = null, currentRoomType = null;
     const dynamicFriendsSnapshotUnsubscribersMap = {};
 
-    /* NATIVE BROWSER BACK BUTTON ESCAPE PROTECTION FRAMEWORK MECHANISM INTERCEPTOR */
     const interceptNativeBackButtonExitGesture = () => {
         history.pushState({ platformDepthToken: true }, "");
     };
@@ -379,11 +378,11 @@
                 return;
             }
 
-            // FIXED: Standard simplified exit prompt containing clean basic Yes/No logic strings
             window.showModal("Exit Platform?", "Are you sure you want to leave the platform?", (choice) => {
                 if (choice === "Yes") {
                     currentUser = null;
-                    history.back();
+                    // Performs an instant standard tab depth release history closure exit loop
+                    window.location.href = "about:blank";
                 } else {
                     window.closeModalViewExplicitly();
                 }
@@ -391,6 +390,7 @@
         }
     });
 
+    /* FIXED: Complete modal controller architecture to prevent bottom grey duplicate buttons */
     window.showModal = (title, body, confirmCallback, showInput = false, quickSelectOpts = null) => {
         document.getElementById('modal-title').innerText = title;
         document.getElementById('modal-body').innerText = body;
@@ -404,11 +404,11 @@
         errorToast.style.display = 'none';
         errorToast.innerText = '';
         document.getElementById('modal-content').classList.remove('modal-error-shake');
-        cancelBtn.style.display = 'block';
 
         if (quickSelectOpts && Array.isArray(quickSelectOpts) && quickSelectOpts.length === 2) {
             input.style.display = 'none';
             confirmBtn.style.display = 'none';
+            cancelBtn.style.display = 'none'; // CRITICAL FIX: Hide the bottom grey double button!
             selectContainer.style.display = 'flex';
 
             const leftBtn = document.getElementById('modal-select-opt-left-btn');
@@ -426,6 +426,7 @@
         } else {
             selectContainer.style.display = 'none';
             confirmBtn.style.display = 'block';
+            cancelBtn.style.display = 'block'; // Restore only for standard text inputs
             input.style.display = showInput ? 'block' : 'none';
             
             confirmBtn.onclick = () => { 
@@ -691,10 +692,6 @@
 
     document.getElementById('modal-comment-dispatch-trigger').onclick = window.dispatchModalComment;
 
-    /* ------------------------------------------------------------- */
-    /* NEW CHAT ROUTER - SECURE PREVALENT MODAL VALIDATION UPGRADE   */
-    /* ------------------------------------------------------------- */
-    
     window.triggerNewChatWorkflow = () => {
         window.showModal("Select Chat Type", "Choose an option below to connect with your platform:", (choice) => {
             if(choice === 'Friends Chat') {
@@ -759,6 +756,7 @@
         document.getElementById('modal-input').placeholder = "Friend's Email or Account UID";
     };
 
+    /* FIXED: Complete validation intercept framework for joining existing Group IDs */
     const triggerGroupOnboardingFlow = () => {
         window.showModal("Group Channels", "Select whether you want to launch a new group or merge into an existing one:", (choice) => {
             if(choice === 'Create New Group') {
@@ -791,20 +789,26 @@
                             return;
                         }
                         
-                        const groupDocRef = doc(db, "groups", groupId);
-                        const checkSnap = await getDoc(groupDocRef);
-                        if(!checkSnap.exists()) {
-                            window.triggerModalErrorUI("Error: No group channel matching that ID was discovered.");
-                            return;
+                        try {
+                            const groupDocRef = doc(db, "groups", groupId);
+                            const checkSnap = await getDoc(groupDocRef);
+                            
+                            // FIXED & CRITICAL HARD STOP: Halts flow instantly and errors out cleanly
+                            if(!checkSnap.exists()) {
+                                window.triggerModalErrorUI("Error: No group channel matching that ID was found.");
+                                return;
+                            }
+                            
+                            window.closeModalViewExplicitly();
+                            
+                            await setDoc(groupDocRef, {
+                                members: arrayUnion(currentUser.uid)
+                            }, { merge: true });
+                            
+                            openActiveChatViewport(groupId, 'group', checkSnap.data().groupName || "Group Chat");
+                        } catch(err) {
+                            window.triggerModalErrorUI("Error: Invalid Group ID layout syntax format.");
                         }
-                        
-                        window.closeModalViewExplicitly();
-                        
-                        await setDoc(groupDocRef, {
-                            members: arrayUnion(currentUser.uid)
-                        }, { merge: true });
-                        
-                        openActiveChatViewport(groupId, 'group', checkSnap.data().groupName || "Group Chat");
                     }, true);
                     document.getElementById('modal-input').placeholder = "Enter Group ID string...";
                 }, 300);
@@ -851,7 +855,6 @@
         if (pane) pane.style.display = 'none';
     });
 
-    /* FIXED: Adjusted single action layout with an "OK" button and zero cancel structures */
     window.triggerGroupMembersViewer = async () => {
         if (!currentRoomId || currentRoomType !== 'group') return;
         
@@ -865,7 +868,6 @@
             window.closeModalViewExplicitly();
         });
         
-        // Hide Cancel text node structurally to leave only the centered OK option active
         document.getElementById('modal-cancel-btn').style.display = 'none';
         document.getElementById('modal-confirm-btn').innerText = "OK";
         
@@ -1073,7 +1075,6 @@
                 return;
             }
             
-            // Build temporary item rows to hold structural element allocations
             container.innerHTML = snap.docs.map(dSnap => {
                 const data = dSnap.data();
                 const peerUID = data.participants.find(id => id !== currentUser.uid) || "Unknown User";
@@ -1087,7 +1088,6 @@
                     </div>`;
             }).join('');
 
-            /* FIXED: Spawn standalone individual user collection listeners to hook profile updates instantly */
             snap.docs.forEach(dSnap => {
                 const data = dSnap.data();
                 const peerUID = data.participants.find(id => id !== currentUser.uid);
@@ -1101,7 +1101,6 @@
                         const liveUserName = (userProfileDocSnap.exists() && userProfileDocSnap.data().username) ? userProfileDocSnap.data().username : "Friend User";
                         labelNode.innerText = liveUserName;
                         
-                        // Dynamically updates window context titles if the user has the conversation viewport open
                         if (currentRoomId === data.chatId) {
                             document.getElementById('viewport-room-title').innerText = liveUserName;
                         }
