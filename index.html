@@ -611,11 +611,10 @@
     document.getElementById('modal-comment-dispatch-trigger').onclick = window.dispatchModalComment;
 
     /* ------------------------------------------------------------- */
-    /* NEW CHAT ROUTER - CONVERTED TO PREMIUM SELECTION BUTTONS      */
+    /* NEW CHAT ROUTER - DUAL-TACTILE ACTION BINDINGS CORRECTED      */
     /* ------------------------------------------------------------- */
     
     window.triggerNewChatWorkflow = () => {
-        // High-end dual selection action model bypass text inputs entirely
         window.showModal("Select Chat Type", "Choose an option below to connect with your platform:", (choice) => {
             if(choice === 'Friends Chat') {
                 triggerFriendsOnboardingFlow();
