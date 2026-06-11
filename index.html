@@ -56,6 +56,7 @@
         .btn-modal-comment-send svg { width: 22px; height: 22px; fill: var(--text); transition: transform 0.1s; }
         .btn-modal-comment-send:active svg { transform: scale(0.9); }
 
+        .profile-container { width: 100%; box-sizing: border-box; }
         .profile-pic { width: 80px; height: 80px; background: #eee; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
         .profile-pic svg { width: 50px; height: 50px; fill: #777; }
 
@@ -63,6 +64,10 @@
         #edit-section { display: none; margin-top: 10px; }
         .pencil-icon { cursor: pointer; width: 20px; height: 20px; fill: var(--text); }
         
+        /* Profile Native Stream Feed Configuration */
+        .profile-feed-heading { border-top: 1px solid var(--border); margin-top: 25px; padding-top: 15px; font-size: 1.1rem; font-weight: bold; text-align: left; }
+        #profile-posts-container { margin-top: 15px; width: 100%; }
+
         /* Fixed cutting off at the bottom by adding native safe-area padding */
         .nav-bottom { position: fixed; bottom: 0; width: 100%; max-width: 600px; min-height: 70px; padding-bottom: env(safe-area-inset-bottom, 10px); background: var(--bg); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; z-index: 1000; box-sizing: border-box; }
         .nav-btn { background: none; border: none; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center; }
@@ -211,6 +216,9 @@
                 <button class="btn" onclick="updateProfile()">Save</button>
             </div>
             <button class="btn" onclick="showModal('Logout', 'Are you sure you want to logout?', executeLogout)" style="background:#d32f2f; margin-top: 20px;">Logout</button>
+            
+            <div class="profile-feed-heading">My Posts</div>
+            <div id="profile-posts-container"></div>
         </div>
     </div>
     <div id="settings-view" class="view">
@@ -238,7 +246,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, doc, getDoc, setDoc, runTransaction, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, query, orderBy, where, serverTimestamp, doc, getDoc, setDoc, runTransaction, increment, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDdOMnwf1r0e5ETserurMUeRkufc17vE_g",
@@ -253,7 +261,8 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     let currentUser = null, currentDisplayName = "", placeholderInterval = null;
-    let activeCommentsUnsubscribe = null, activeOpenedPostId = null;
+    let activeCommentsUnsubscribe = null, activeOpenedPostId = null, profileFeedUnsubscribe = null;
+    const activeCommentListeners = {};
 
     window.showModal = (title, body, confirmCallback, showInput = false) => {
         document.getElementById('modal-title').innerText = title;
@@ -314,14 +323,6 @@
         } else { clearInterval(placeholderInterval); }
     };
 
-    document.getElementById('toggle-auth').onclick = () => {
-        let isLogin = document.getElementById('auth-title').innerText === "Login";
-        document.getElementById('auth-title').innerText = isLogin ? "Sign Up" : "Login";
-        document.getElementById('auth-btn').innerText = isLogin ? "Register" : "Continue";
-        document.getElementById('toggle-auth').innerText = isLogin ? "Already have an account? Login" : "Create an account instead";
-        document.getElementById('auth-err').style.display = 'none';
-    };
-
     window.loadProfile = async () => {
         const docRef = doc(db, "users", currentUser.uid);
         const docSnap = await getDoc(docRef);
@@ -329,14 +330,73 @@
         currentDisplayName = (docSnap.exists() && docSnap.data().username) ? docSnap.data().username : currentUser.email.split('@')[0];
         document.getElementById('name-text').innerText = currentDisplayName;
         document.getElementById('username-input').value = currentDisplayName;
+        
+        /* Initialize Isolated User-Only Post Snapshot Stream Listener inside profile viewport */
+        if (profileFeedUnsubscribe) profileFeedUnsubscribe();
+        const profilePostsQuery = query(collection(db, "posts"), where("authorUID", "==", currentUser.uid), orderBy("createdAt", "desc"));
+        
+        profileFeedUnsubscribe = onSnapshot(profilePostsQuery, async (snap) => {
+            const profileContainer = document.getElementById('profile-posts-container');
+            if (snap.empty) {
+                profileContainer.innerHTML = `<div class="empty-chat-msg">You haven't posted anything yet.</div>`;
+                return;
+            }
+            const localCardsHTML = [];
+            for (const docSnap of snap.docs) {
+                const data = docSnap.data();
+                const postId = docSnap.id;
+                const likeSnap = await getDoc(doc(db, `posts/${postId}/likes`, currentUser.uid));
+                const hasLiked = likeSnap.exists();
+                
+                let formattedTime = "Just now";
+                if (data.createdAt) {
+                    const dateObj = data.createdAt.toDate();
+                    formattedTime = dateObj.toLocaleDateString() + " " + dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+                const textSnippet = data.content.substring(0, 45) + (data.content.length > 45 ? "..." : "");
+                
+                localCardsHTML.push(`
+                    <div class="post-card" data-id="${postId}">
+                        <div class="post-author">${data.authorName || 'Anonymous'}<span class="post-timestamp"> • ${formattedTime}</span></div>
+                        ${data.title ? `<div class="post-title">${data.title.replace(/</g, "&lt;")}</div>` : ''}
+                        <p>${data.content.replace(/</g, "&lt;")}</p>
+                        <div class="post-actions">
+                            <svg class="action-icon ${hasLiked ? 'liked' : ''}" onclick="likePost('${postId}', this)" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                            <span class="like-count">${data.likeCount || 0}</span>
+                            <svg class="action-icon" onclick="openCommentsOverlay('${postId}', \`${textSnippet.replace(/'/g, "\\'")}\`)" viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+                            <span class="comment-count-label" onclick="openCommentsOverlay('${postId}', \`${textSnippet.replace(/'/g, "\\'")}\`)">${data.commentCount || 0}</span>
+                            <button onclick="showModal('Delete', 'Delete post?', () => deletePost('${postId}'))" style="color:red;border:none;background:none;cursor:pointer">Delete</button>
+                        </div>
+                    </div>`);
+            }
+            profileContainer.innerHTML = localCardsHTML.join('');
+        });
     };
 
     window.updateProfile = async () => {
         const username = document.getElementById('username-input').value.trim();
         if(!username) return;
+        
+        // Save new user document details profile context block
         await setDoc(doc(db, "users", currentUser.uid), { username }, { merge: true });
         currentDisplayName = username;
         document.getElementById('name-text').innerText = currentDisplayName;
+        
+        /* Cascade update username mapping across all historical post documents asynchronously */
+        try {
+            const postsQuery = query(collection(db, "posts"), where("authorUID", "==", currentUser.uid));
+            const querySnapshot = await getDocs(postsQuery);
+            if (!querySnapshot.empty) {
+                const batch = writeBatch(db);
+                querySnapshot.docs.forEach((docSnapshot) => {
+                    batch.update(doc(db, "posts", docSnapshot.id), { authorName: username });
+                });
+                await batch.commit();
+            }
+        } catch(e) {
+            console.error("Cascading updates error across historical posts architecture:", e);
+        }
+        
         clearInterval(placeholderInterval);
         toggleEdit();
     };
@@ -388,7 +448,6 @@
         }
     };
 
-    /* Instagram Overlay Bottom Sheet Display Component Engine */
     window.openCommentsOverlay = async (postId, parentSnippetText) => {
         activeOpenedPostId = postId;
         document.getElementById('modal-parent-post-snippet').innerHTML = `<strong>Context:</strong> "${parentSnippetText.replace(/</g, "&lt;")}"`;
@@ -519,7 +578,11 @@
         await deleteDoc(doc(db, "posts", id)); 
     };
     
-    window.executeLogout = () => { signOut(auth); location.reload(); };
+    window.executeLogout = () => { 
+        if (profileFeedUnsubscribe) profileFeedUnsubscribe();
+        signOut(auth); 
+        location.reload(); 
+    };
     
     document.getElementById('auth-btn').onclick = async () => {
         const email = document.getElementById('email').value.trim(), pass = document.getElementById('password').value.trim();
