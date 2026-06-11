@@ -9,7 +9,6 @@
         [data-theme="dark"] { --bg: #0a192f; --text: #ffffff; --border: #1f2d40; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; transition: background 0.3s, color 0.3s; overflow-x: hidden; }
         
-        /* FIXED: Bumped z-index up to 4000 so modals securely render on top of the active chat and comment panels */
         #auth-overlay, #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 4000; display: none; justify-content: center; align-items: center; padding: 1rem; }
         #auth-overlay { display: flex; background: var(--bg); }
         .auth-box, .modal-box { width: 90%; max-width: 400px; padding: 2rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); text-align: center; transition: transform 0.2s ease; }
@@ -481,7 +480,7 @@
                         <div class="post-actions">
                             <svg class="action-icon ${hasLiked ? 'liked' : ''}" onclick="likePost('${postId}', this)" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                             <span class="like-count">${data.likeCount || 0}</span>
-                            <svg class="action-icon" onclick="openCommentsOverlay('${postId}', \` ${textSnippet.replace(/'/g, "\\'")}\`)" viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+                            <svg class="action-icon" onclick="openCommentsOverlay('${postId}', \`${textSnippet.replace(/'/g, "\\'")}\`)" viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
                             <span class="comment-count-label" onclick="openCommentsOverlay('${postId}', \`${textSnippet.replace(/'/g, "\\'")}\`)">${data.commentCount || 0}</span>
                             <button onclick="showModal('Delete', 'Delete post?', () => deletePost('${postId}'))" style="color:red;border:none;background:none;cursor:pointer">Delete</button>
                         </div>
@@ -609,7 +608,7 @@
 
     window.dispatchModalComment = async () => {
         if (!activeOpenedPostId || !currentUser) return;
-        const inputEl = document.getElementById('comments-modal-box');
+        const inputEl = document.getElementById('modal-comment-text-field');
         const val = inputEl.value.trim();
         if (!val) return;
 
@@ -864,6 +863,7 @@
         }
     };
 
+    /* FIXED: Integrated robust, reactive account scanning logic to intercept fake group invitations instantly */
     const launchGroupInvitationWorkflow = (groupId, groupName) => {
         window.showModal("Invite Friend", "Enter friend's registered Email ID or Account UID to invite them:", async (identityText) => {
             const target = identityText.trim();
@@ -872,13 +872,24 @@
                 return;
             }
             
-            let targetUID = target;
-            if(target.includes('@')) {
+            let targetUID = null;
+            
+            // Validate against DB users layer first
+            const directUserSnap = await getDoc(doc(db, "users", target));
+            if(directUserSnap.exists()) {
+                targetUID = target;
+            } else {
                 try {
                     const lookup = query(collection(db, "users"), where("email", "==", target));
                     const snap = await getDocs(lookup);
                     if(!snap.empty) targetUID = snap.docs[0].id;
                 } catch(e) {}
+            }
+
+            // Interrupt pipeline if target user mapping validation breaks
+            if(!targetUID) {
+                window.triggerModalErrorUI("Error: No registered user found with that Email or UID.");
+                return;
             }
 
             window.closeModalViewExplicitly();
@@ -893,9 +904,11 @@
                 timestamp: serverTimestamp()
             });
             
-            window.showModal("Success", "Invitation transmitted successfully over the database channel!", () => {
-                window.closeModalViewExplicitly();
-            });
+            setTimeout(() => {
+                window.showModal("Success", "Invitation transmitted successfully over the database channel!", () => {
+                    window.closeModalViewExplicitly();
+                });
+            }, 300);
         }, true);
         document.getElementById('modal-input').placeholder = "Friend's Email or Account UID";
     };
