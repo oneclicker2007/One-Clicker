@@ -41,9 +41,12 @@
         .single-comment-item { font-size: 0.85rem; border-bottom: 1px dashed var(--border); padding: 6px 0; word-break: break-word; }
         .single-comment-item:last-child { border-bottom: none; }
         .comment-author-meta { font-weight: bold; color: #555; font-size: 0.75rem; margin-bottom: 2px; }
-        .comment-input-box-wrapper { display: flex; gap: 8px; align-items: center; margin-top: 5px; }
-        .comment-input-box-wrapper input { margin-bottom: 0; padding: 8px 12px; font-size: 0.85rem; }
-        .btn-comment-submit { background: #000; color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-size: 0.85rem; font-weight: bold; cursor: pointer; height: 38px; box-sizing: border-box; }
+        
+        .comment-input-box-wrapper { display: flex; gap: 8px; align-items: center; margin-top: 5px; position: relative; width: 100%; box-sizing: border-box; }
+        .comment-input-box-wrapper input { margin-bottom: 0; padding: 8px 40px 8px 12px; font-size: 0.85rem; width: 100%; }
+        .btn-comment-send-icon { background: none; border: none; cursor: pointer; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); padding: 4px; display: flex; align-items: center; justify-content: center; }
+        .btn-comment-send-icon svg { width: 20px; height: 20px; fill: var(--text); transition: fill 0.2s; }
+        .btn-comment-send-icon:hover svg { fill: #000; }
 
         .profile-pic { width: 80px; height: 80px; background: #eee; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
         .profile-pic svg { width: 50px; height: 50px; fill: #777; }
@@ -256,7 +259,6 @@
         document.getElementById(id).classList.add('active');
     };
 
-    /* Direct Tab Navigation logic for Chat Interface toggles */
     window.switchChatTab = (tabName) => {
         document.querySelectorAll('.chat-tab-item').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.chat-pane').forEach(el => el.classList.remove('active'));
@@ -361,7 +363,6 @@
         }
     };
 
-    /* Realtime comments subcollection toggle handler module */
     window.toggleCommentsView = (postId) => {
         const actionHeader = document.querySelector(`.post-card[data-id="${postId}"] .post-actions`);
         const wrapper = document.getElementById(`comments-wrapper-${postId}`);
@@ -411,7 +412,9 @@
                 authorName: currentDisplayName,
                 createdAt: serverTimestamp()
             });
-            await setDoc(postRef, { commentCount: increment(1) }, { merge: true });
+            await runTransaction(db, async (transaction) => {
+                transaction.update(postRef, { commentCount: increment(1) });
+            });
         } catch (e) {
             console.error("Failed handling comment allocation:", e);
         }
@@ -467,7 +470,9 @@
                                 <div class="comments-stream" id="comments-stream-${postId}"></div>
                                 <div class="comment-input-box-wrapper">
                                     <input type="text" id="comment-input-${postId}" placeholder="Write a comment... (Max 100)" maxlength="100">
-                                    <button class="btn-comment-submit" onclick="submitComment('${postId}')">Send</button>
+                                    <button class="btn-comment-send-icon" onclick="submitComment('${postId}')">
+                                        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                                    </button>
                                 </div>
                             </div>
                         </div>`;
