@@ -71,6 +71,15 @@
         .btn-feed-help { background: #000; color: #fff; border: none; padding: 8px 16px; font-weight: bold; border-radius: 20px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
         .btn-feed-help svg { width: 14px; height: 14px; fill: #fff; }
         .img-feed-whatsapp { height: 32px; width: auto; cursor: pointer; display: block; object-fit: contain; }
+
+        /* Modern text-tab segment structure for Chat screen */
+        .chat-tabs-container { display: flex; gap: 24px; border-bottom: 1px solid var(--border); margin-top: 10px; margin-bottom: 15px; padding-bottom: 5px; }
+        .chat-tab-item { font-size: 1.05rem; font-weight: 600; color: #777; cursor: pointer; padding: 4px 0; transition: color 0.2s; position: relative; }
+        .chat-tab-item.active { color: var(--text); }
+        .chat-tab-item.active::after { content: ''; position: absolute; bottom: -6px; left: 0; width: 100%; height: 2px; background: var(--text); }
+        .chat-pane { display: none; width: 100%; }
+        .chat-pane.active { display: block; }
+        .empty-chat-msg { color: #777; font-size: 0.95rem; padding: 10px 5px; }
     </style>
 </head>
 <body>
@@ -114,6 +123,19 @@
     <div id="chat-view" class="view">
         <div class="chat-view-container">
             <h1>Chat</h1>
+            
+            <div class="chat-tabs-container">
+                <div class="chat-tab-item active" id="tab-friends" onclick="switchChatTab('friends')">Friends</div>
+                <div class="chat-tab-item" id="tab-group" onclick="switchChatTab('group')">Group</div>
+            </div>
+
+            <div class="chat-pane active" id="pane-friends">
+                <div class="empty-chat-msg">No friends chat history yet.</div>
+            </div>
+            <div class="chat-pane" id="pane-group">
+                <div class="empty-chat-msg">No group conversations found.</div>
+            </div>
+
             <div class="new-chat-wrapper">
                 <button class="btn-new-chat">
                     <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
@@ -213,6 +235,20 @@
     window.switchView = (id) => {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById(id).classList.add('active');
+    };
+
+    /* Direct Tab Navigation logic for Chat Interface toggles */
+    window.switchChatTab = (tabName) => {
+        document.querySelectorAll('.chat-tab-item').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.chat-pane').forEach(el => el.classList.remove('active'));
+        
+        if (tabName === 'friends') {
+            document.getElementById('tab-friends').classList.add('active');
+            document.getElementById('pane-friends').classList.add('active');
+        } else if (tabName === 'group') {
+            document.getElementById('tab-group').classList.add('active');
+            document.getElementById('pane-group').classList.add('active');
+        }
     };
 
     const showError = (msg) => {
