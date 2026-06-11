@@ -16,8 +16,7 @@
         .btn { width: 100%; padding: 12px; background: #000; color: #fff; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; margin-top: 10px; }
         .btn-cancel { width: 100%; padding: 12px; background: #e0e0e0; color: #000; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; margin-top: 10px; }
         
-        /* Premium Feature UI Component Styling */
-        .btn-premium-badge { background: linear-gradient(135deg, #111111 0%, #2c2c2c 100%); color: #d4af37; border: 1px solid #d4af37; width: 100%; padding: 12px; font-weight: bold; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin: 10px 0 15px 0; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.15); transition: opacity 0.2s; box-sizing: border-box; }
+        .btn-premium-badge { background: linear-gradient(135deg, #111111 0%, #2c2c2c 100%); color: #d4af37; border: 1px solid #d4af37; width: 100%; padding: 12px; font-weight: bold; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin: 10px 0 15px 0; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.15); transition: opacity 0.2s; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.15); transition: opacity 0.2s; box-sizing: border-box; }
         .btn-premium-badge:active { opacity: 0.8; }
         .btn-premium-badge svg { width: 16px; height: 16px; fill: #d4af37; }
 
@@ -502,6 +501,27 @@
         const errEl = document.getElementById('auth-err');
         errEl.innerText = msg;
         errEl.style.display = 'block';
+    };
+
+    /* FIXED: Connected functional view switching loop to the Create Account anchor node link */
+    document.getElementById('toggle-auth').onclick = () => {
+        const titleEl = document.getElementById('auth-title');
+        const btnEl = document.getElementById('auth-btn');
+        const toggleLink = document.getElementById('toggle-auth');
+        const errEl = document.getElementById('auth-err');
+
+        errEl.style.display = 'none';
+        errEl.innerText = '';
+
+        if (titleEl.innerText === "Login") {
+            titleEl.innerText = "Sign Up";
+            btnEl.innerText = "Register";
+            toggleLink.innerText = "Already have an account? Login instead";
+        } else {
+            titleEl.innerText = "Login";
+            btnEl.innerText = "Continue";
+            toggleLink.innerText = "Create an account instead";
+        }
     };
 
     window.toggleEdit = () => {
