@@ -16,7 +16,6 @@
         .btn { width: 100%; padding: 12px; background: #000; color: #fff; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; margin-top: 10px; }
         .btn-cancel { width: 100%; padding: 12px; background: #e0e0e0; color: #000; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; margin-top: 10px; }
         
-        /* Modal Workflow Custom Quick-Select Options Wrapper */
         .modal-quick-select-btns-row { display: none; gap: 10px; margin-top: 15px; width: 100%; box-sizing: border-box; }
         .btn-modal-select-item { flex: 1; padding: 12px; background: #000; color: #fff; border: none; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
         .btn-modal-select-item:active { opacity: 0.8; }
@@ -38,7 +37,6 @@
         .like-count, .comment-count-label { font-size: 0.9rem; font-weight: bold; margin-left: -10px; color: var(--text); }
         .comment-count-label { margin-left: -10px; cursor: pointer; }
 
-        /* Instagram Style Modal Comments Viewport System */
         #comments-overlay-panel { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 3000; display: none; justify-content: center; align-items: flex-end; }
         .comments-modal-box { width: 100%; max-width: 600px; background: var(--bg); border-top-left-radius: 20px; border-top-right-radius: 20px; height: 80vh; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out; box-sizing: border-box; position: relative; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -72,7 +70,6 @@
         .profile-feed-heading { border-top: 1px solid var(--border); margin-top: 25px; padding-top: 15px; font-size: 1.1rem; font-weight: bold; text-align: left; }
         #profile-posts-container { margin-top: 15px; width: 100%; }
 
-        /* Fixed cutting off at the bottom by adding native safe-area padding */
         .nav-bottom { position: fixed; bottom: 0; width: 100%; max-width: 600px; min-height: 70px; padding-bottom: env(safe-area-inset-bottom, 10px); background: var(--bg); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; z-index: 1000; box-sizing: border-box; }
         .nav-btn { background: none; border: none; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center; }
         .nav-btn svg { width: 26px; height: 26px; fill: var(--text); overflow: visible; }
@@ -86,17 +83,14 @@
         input:checked + .slider { background-color: #000; }
         input:checked + .slider:before { transform: translateX(26px); }
 
-        /* Structuring Chat Area Container Logic */
         .chat-view-container { display: flex; flex-direction: column; min-height: calc(100vh - 170px); position: relative; width: 100%; box-sizing: border-box; }
         
-        /* Positioned precisely 80% down from the screen top axis */
         .new-chat-wrapper { position: fixed; right: calc(50% - 280px); top: 80%; transform: translateY(-50%); display: flex; justify-content: flex-end; align-items: center; padding-right: 15px; z-index: 999; }
         @media (max-width: 600px) { .new-chat-wrapper { right: 15px; } }
 
         .btn-new-chat { background: #000; color: #fff; border: none; padding: 12px 20px; font-weight: bold; border-radius: 30px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 0.95rem; transition: background 0.2s ease; }
         .btn-new-chat svg { width: 16px; height: 16px; fill: #fff; }
 
-        /* Top Header Action Buttons Container Configuration */
         .feed-header-wrapper { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 1rem; box-sizing: border-box; }
         .feed-header-wrapper h1 { margin: 0; }
         .feed-actions-right { display: flex; align-items: center; gap: 12px; }
@@ -106,7 +100,6 @@
         .btn-feed-help svg { width: 14px; height: 14px; fill: #fff; }
         .img-feed-whatsapp { height: 32px; width: auto; cursor: pointer; display: block; object-fit: contain; }
 
-        /* Modern text-tab segment structure for Chat screen */
         .chat-tabs-container { display: flex; gap: 24px; border-bottom: 1px solid var(--border); margin-top: 10px; margin-bottom: 15px; padding-bottom: 5px; }
         .chat-tab-item { font-size: 1.05rem; font-weight: 600; color: #777; cursor: pointer; padding: 4px 0; transition: color 0.2s; position: relative; }
         .chat-tab-item.active { color: var(--text); }
@@ -115,8 +108,8 @@
         .chat-pane.active { display: block; }
         .empty-chat-msg { color: #777; font-size: 0.95rem; padding: 10px 5px; }
 
-        /* Advanced Architecture UI elements for Realtime Chatting subchannels */
-        .chat-item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; cursor: pointer; background: rgba(0,0,0,0.01); transition: background 0.2s; }
+        .chat-item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; background: rgba(0,0,0,0.01); transition: background 0.2s; }
+        .chat-item-clickable-area { flex: 1; cursor: pointer; }
         .chat-item-row:hover { background: rgba(0,0,0,0.03); }
         .chat-row-title { font-weight: bold; font-size: 0.95rem; color: var(--text); }
         .chat-row-subtitle { font-size: 0.75rem; color: #777; margin-top: 2px; }
@@ -124,8 +117,10 @@
         .btn-invite-action { border: none; padding: 6px 12px; font-size: 0.75rem; font-weight: bold; border-radius: 4px; cursor: pointer; }
         .btn-invite-action.btn-invite-accept { background: #000; color: #fff; margin-top: 0; width: auto; }
         .btn-invite-action.btn-invite-reject { background: #e0e0e0; color: #000; margin-top: 0; width: auto; }
+        
+        .btn-chat-row-delete { background: none; border: none; color: #d32f2f; font-weight: bold; font-size: 0.8rem; cursor: pointer; padding: 5px 10px; z-index: 10; }
+        .btn-chat-row-delete:hover { text-decoration: underline; }
 
-        /* Messaging Dedicated Window Framework Overlay Sheet */
         #active-chat-viewport-panel { position: fixed; inset: 0; background: var(--bg); z-index: 2500; display: none; flex-direction: column; box-sizing: border-box; }
         .chat-viewport-header { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); gap: 15px; }
         .btn-viewport-back { background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 4px; }
@@ -303,14 +298,13 @@
         <button class="nav-btn" onclick="switchView('chat-view')"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></button>
         <button class="nav-btn post-btn" onclick="switchView('post-view')"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
         <button class="nav-btn" onclick="loadProfile(); switchView('profile-view')"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button>
-        <button class="nav-btn" onclick="switchView('settings-view')"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button>
-    </nav>
+        <button class="nav-btn" onclick="switchView('settings-view')"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></nav>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, query, orderBy, where, serverTimestamp, doc, getDoc, setDoc, runTransaction, increment, writeBatch, getDocs, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, query, orderBy, where, serverTimestamp, doc, getDoc, setDoc, runTransaction, increment, writeBatch, getDocs, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDdOMnwf1r0e5ETserurMUeRkufc17vE_g",
@@ -330,7 +324,6 @@
     let directChatsUnsubscribe = null, groupChatsUnsubscribe = null, groupInvitesUnsubscribe = null, currentActiveRoomMessagesUnsubscribe = null;
     let currentRoomId = null, currentRoomType = null;
 
-    /* Optimized ShowModal supporting Dynamic Direct Selection Buttons WITHOUT Overlaps */
     window.showModal = (title, body, confirmCallback, showInput = false, quickSelectOpts = null) => {
         document.getElementById('modal-title').innerText = title;
         document.getElementById('modal-body').innerText = body;
@@ -365,7 +358,6 @@
             
             confirmBtn.onclick = () => { 
                 const textVal = input.value;
-                document.getElementById('modal-overlay').style.display = 'none'; 
                 confirmCallback(textVal); 
                 input.value = '';
             };
@@ -612,7 +604,7 @@
     document.getElementById('modal-comment-dispatch-trigger').onclick = window.dispatchModalComment;
 
     /* ------------------------------------------------------------- */
-    /* NEW CHAT ROUTER - DUAL-TACTILE ACTION BINDINGS FIXED CODE     */
+    /* NEW CHAT ROUTER - SECURE VALIDATED REALTIME MESSAGING BLOCK   */
     /* ------------------------------------------------------------- */
     
     window.triggerNewChatWorkflow = () => {
@@ -628,15 +620,20 @@
     const triggerFriendsOnboardingFlow = () => {
         window.showModal("New Friends Chat", "Enter your friend's registered Email ID or Account UID:", async (targetIdentity) => {
             const identity = targetIdentity.trim();
-            if(!identity) return;
+            if(!identity) {
+                alert("Error: Friend identifier cannot be empty.");
+                return;
+            }
             if(identity === currentUser.uid || identity === currentUser.email) {
                 alert("You cannot start a direct chat with yourself.");
                 return;
             }
             
+            document.getElementById('modal-overlay').style.display = 'none';
             let matchedUserUID = null;
-            let matchedName = "Anonymous Partner";
+            let matchedName = "";
             
+            // Query validation block to confirm account authenticity
             const directUserSnap = await getDoc(doc(db, "users", identity));
             if(directUserSnap.exists()) {
                 matchedUserUID = identity;
@@ -653,7 +650,8 @@
             }
 
             if(!matchedUserUID) {
-                matchedUserUID = identity.replace(/[.#@$\[\]]/g, "_"); 
+                alert("Error: No registered user found with that Email or UID.");
+                return;
             }
 
             const generatedChatRoomId = [currentUser.uid, matchedUserUID].sort().join("_WS_");
@@ -679,7 +677,11 @@
                 setTimeout(() => {
                     window.showModal("Create Group", "Enter a title name for your group channel:", async (title) => {
                         const name = title.trim();
-                        if(!name) return;
+                        if(!name) {
+                            alert("Error: Group title cannot be blank.");
+                            return;
+                        }
+                        document.getElementById('modal-overlay').style.display = 'none';
                         
                         const groupRef = await addDoc(collection(db, "groups"), {
                             groupName: name,
@@ -696,7 +698,11 @@
                 setTimeout(() => {
                     window.showModal("Join Group Channel", "Enter the exact Group ID code you received:", async (gId) => {
                         const groupId = gId.trim();
-                        if(!groupId) return;
+                        if(!groupId) {
+                            alert("Error: Group ID cannot be empty.");
+                            return;
+                        }
+                        document.getElementById('modal-overlay').style.display = 'none';
                         
                         const groupDocRef = doc(db, "groups", groupId);
                         const checkSnap = await getDoc(groupDocRef);
@@ -715,6 +721,30 @@
                 }, 300);
             }
         }, false, ['Create New Group', 'Join Existing ID']);
+    };
+
+    /* Standalone Side-Scoped Deletion Mechanisms module block */
+    window.deleteFriendChatRow = async (chatId, event) => {
+        if(event) event.stopPropagation();
+        if(!confirm("Are you sure you want to delete this conversation for both sides?")) return;
+        try {
+            await deleteDoc(doc(db, "chats", chatId));
+        } catch(e) {
+            console.error("Direct room drop execution fault:", e);
+        }
+    };
+
+    window.leaveGroupChatRow = async (groupId, event) => {
+        if(event) event.stopPropagation();
+        if(!confirm("Are you sure you want to remove this group from your dashboard side?")) return;
+        try {
+            const groupDocRef = doc(db, "groups", groupId);
+            await setDoc(groupDocRef, {
+                members: arrayRemove(currentUser.uid)
+            }, { merge: true });
+        } catch(e) {
+            console.error("Group escape operation block fault:", e);
+        }
     };
 
     window.openActiveChatViewport = (roomId, roomType, roomTitle) => {
@@ -802,7 +832,11 @@
     const launchGroupInvitationWorkflow = (groupId, groupName) => {
         window.showModal("Invite Friend", "Enter friend's registered Email ID or Account UID to invite them:", async (identityText) => {
             const target = identityText.trim();
-            if(!target) return;
+            if(!target) {
+                alert("Error: Recipient text cannot be blank.");
+                return;
+            }
+            document.getElementById('modal-overlay').style.display = 'none';
             
             let targetUID = target;
             if(target.includes('@')) {
@@ -857,12 +891,12 @@
                 const peerUID = data.participants.find(id => id !== currentUser.uid) || "Unknown User";
                 const peerName = data.namesMapping ? (data.namesMapping[peerUID] || "Friend User") : "Friend User";
                 return `
-                    <div class="chat-item-row" onclick="openActiveChatViewport('${data.chatId}', 'friend', '${peerName}')">
-                        <div>
+                    <div class="chat-item-row">
+                        <div class="chat-item-clickable-area" onclick="openActiveChatViewport('${data.chatId}', 'friend', '${peerName}')">
                             <div class="chat-row-title">${peerName}</div>
                             <div class="chat-row-subtitle">UID: ${peerUID}</div>
                         </div>
-                        <svg style="width:20px;height:20px;fill:#777" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+                        <button class="btn-chat-row-delete" onclick="deleteFriendChatRow('${data.chatId}', event)">Delete</button>
                     </div>`;
             }).join('');
         });
@@ -877,12 +911,12 @@
             container.innerHTML = snap.docs.map(dSnap => {
                 const data = dSnap.data();
                 return `
-                    <div class="chat-item-row" onclick="openActiveChatViewport('${dSnap.id}', 'group', '${data.groupName}')">
-                        <div>
+                    <div class="chat-item-row">
+                        <div class="chat-item-clickable-area" onclick="openActiveChatViewport('${dSnap.id}', 'group', '${data.groupName}')">
                             <div class="chat-row-title">${data.groupName}</div>
                             <div class="chat-row-subtitle">ID: ${dSnap.id}</div>
                         </div>
-                        <svg style="width:20px;height:20px;fill:#777" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                        <button class="btn-chat-row-delete" onclick="leaveGroupChatRow('${dSnap.id}', event)">Delete</button>
                     </div>`;
             }).join('');
         });
