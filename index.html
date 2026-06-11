@@ -14,7 +14,12 @@
         .auth-box, .modal-box { width: 90%; max-width: 400px; padding: 2rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); text-align: center; }
         input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; background: var(--bg); color: var(--text); }
         .btn { width: 100%; padding: 12px; background: #000; color: #fff; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; margin-top: 10px; }
-        .btn-cancel { background: #e0e0e0; color: #000; }
+        .btn-cancel { width: 100%; padding: 12px; background: #e0e0e0; color: #000; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; margin-top: 10px; }
+        
+        /* Modal Workflow Custom Quick-Select Options Wrapper */
+        .modal-quick-select-btns-row { display: none; gap: 10px; margin-top: 15px; width: 100%; box-sizing: border-box; }
+        .btn-modal-select-item { flex: 1; padding: 12px; background: #000; color: #fff; border: none; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+        .btn-modal-select-item:active { opacity: 0.8; }
         
         .err-msg { display: none; background: #fff5f5; border-left: 5px solid #d32f2f; color: #d32f2f; padding: 12px; margin-bottom: 15px; border-radius: 4px; font-size: 0.9rem; font-weight: 500; text-align: left; }
         
@@ -117,8 +122,8 @@
         .chat-row-subtitle { font-size: 0.75rem; color: #777; margin-top: 2px; }
         .chat-invite-actions-wrap { display: flex; gap: 6px; }
         .btn-invite-action { border: none; padding: 6px 12px; font-size: 0.75rem; font-weight: bold; border-radius: 4px; cursor: pointer; }
-        .btn-invite-accept { background: #000; color: #fff; }
-        .btn-invite-reject { background: #e0e0e0; color: #000; }
+        .btn-invite-action.btn-invite-accept { background: #000; color: #fff; margin-top: 0; width: auto; }
+        .btn-invite-action.btn-invite-reject { background: #e0e0e0; color: #000; margin-top: 0; width: auto; }
 
         /* Messaging Dedicated Window Framework Overlay Sheet */
         #active-chat-viewport-panel { position: fixed; inset: 0; background: var(--bg); z-index: 2500; display: none; flex-direction: column; box-sizing: border-box; }
@@ -187,9 +192,15 @@
     <div class="modal-box" id="modal-content">
         <h3 id="modal-title">Action</h3>
         <p id="modal-body">Are you sure?</p>
-        <input type="text" id="modal-input" placeholder="Enter reason (max 50)" maxlength="50" style="display:none">
+        <input type="text" id="modal-input" placeholder="Enter context string" style="display:none">
+        
+        <div class="modal-quick-select-btns-row" id="modal-selection-buttons-container">
+            <button class="btn-modal-select-item" id="modal-select-opt-left-btn">Left Opt</button>
+            <button class="btn-modal-select-item" id="modal-select-opt-right-btn">Right Opt</button>
+        </div>
+
         <button class="btn" id="modal-confirm-btn">Confirm</button>
-        <button class="btn btn-cancel" onclick="document.getElementById('modal-overlay').style.display='none'">Cancel</button>
+        <button class="btn-cancel" id="modal-cancel-btn" onclick="document.getElementById('modal-overlay').style.display='none'">Cancel</button>
     </div>
 </div>
 
@@ -316,20 +327,48 @@
     let currentUser = null, currentDisplayName = "", placeholderInterval = null;
     let activeCommentsUnsubscribe = null, activeOpenedPostId = null, profileFeedUnsubscribe = null;
     
-    // Realtime Sync Handlers for messaging context blocks
     let directChatsUnsubscribe = null, groupChatsUnsubscribe = null, groupInvitesUnsubscribe = null, currentActiveRoomMessagesUnsubscribe = null;
-    let currentRoomId = null, currentRoomType = null; // type: 'friend' or 'group'
+    let currentRoomId = null, currentRoomType = null;
 
-    window.showModal = (title, body, confirmCallback, showInput = false) => {
+    /* Optimized ShowModal supporting Dynamic Direct Selection Buttons */
+    window.showModal = (title, body, confirmCallback, showInput = false, quickSelectOpts = null) => {
         document.getElementById('modal-title').innerText = title;
         document.getElementById('modal-body').innerText = body;
+        
         const input = document.getElementById('modal-input');
-        input.style.display = showInput ? 'block' : 'none';
-        document.getElementById('modal-confirm-btn').onclick = () => { 
-            confirmCallback(input.value); 
-            document.getElementById('modal-overlay').style.display='none'; 
-            input.value = '';
-        };
+        const confirmBtn = document.getElementById('modal-confirm-btn');
+        const selectContainer = document.getElementById('modal-selection-buttons-container');
+
+        if (quickSelectOpts && Array.isArray(quickSelectOpts) && quickSelectOpts.length === 2) {
+            input.style.display = 'none';
+            confirmBtn.style.display = 'none';
+            selectContainer.style.display = 'flex';
+
+            const leftBtn = document.getElementById('modal-select-opt-left-btn');
+            const rightBtn = document.getElementById('modal-select-opt-right-btn');
+
+            leftBtn.innerText = quickSelectOpts[0];
+            rightBtn.innerText = quickSelectOpts[1];
+
+            leftBtn.onclick = () => {
+                confirmCallback(quickSelectOpts[0]);
+                document.getElementById('modal-overlay').style.display = 'none';
+            };
+            rightBtn.onclick = () => {
+                confirmCallback(quickSelectOpts[1]);
+                document.getElementById('modal-overlay').style.display = 'none';
+            };
+        } else {
+            selectContainer.style.display = 'none';
+            confirmBtn.style.display = 'block';
+            input.style.display = showInput ? 'block' : 'none';
+            
+            confirmBtn.onclick = () => { 
+                confirmCallback(input.value); 
+                document.getElementById('modal-overlay').style.display = 'none'; 
+                input.value = '';
+            };
+        }
         document.getElementById('modal-overlay').style.display = 'flex';
     };
 
@@ -572,21 +611,18 @@
     document.getElementById('modal-comment-dispatch-trigger').onclick = window.dispatchModalComment;
 
     /* ------------------------------------------------------------- */
-    /* NEW CHAT ARCHITECTURE SYSTEM - FRIENDS AND GROUPS CORE LOGIC  */
+    /* NEW CHAT ROUTER - CONVERTED TO PREMIUM SELECTION BUTTONS      */
     /* ------------------------------------------------------------- */
     
     window.triggerNewChatWorkflow = () => {
-        window.showModal("Select Chat Type", "Choose an option below to connect:", (choice) => {
-            const parsed = choice.trim().toLowerCase();
-            if(parsed === 'friends' || parsed === 'friend' || parsed === '1') {
+        // High-end dual selection action model bypass text inputs entirely
+        window.showModal("Select Chat Type", "Choose an option below to connect with your platform:", (choice) => {
+            if(choice === 'Friends Chat') {
                 triggerFriendsOnboardingFlow();
-            } else if (parsed === 'group' || parsed === 'groups' || parsed === '2') {
+            } else if (choice === 'Group Chat') {
                 triggerGroupOnboardingFlow();
-            } else {
-                alert("Invalid selection. Type 'friends' or 'group'.");
             }
-        }, true);
-        document.getElementById('modal-input').placeholder = "Type 'friends' or 'group'";
+        }, false, ['Friends Chat', 'Group Chat']);
     };
 
     const triggerFriendsOnboardingFlow = () => {
@@ -601,13 +637,11 @@
             let matchedUserUID = null;
             let matchedName = "Anonymous Partner";
             
-            // First treat input parameter as a direct User Document ID fetch reference
             const directUserSnap = await getDoc(doc(db, "users", identity));
             if(directUserSnap.exists()) {
                 matchedUserUID = identity;
                 matchedName = directUserSnap.data().username || "User";
             } else {
-                // Secondary fallback lookup tracking via explicit global user email indexing scans
                 try {
                     const emailLookupQuery = query(collection(db, "users"), where("email", "==", identity));
                     const emailSnap = await getDocs(emailLookupQuery);
@@ -615,17 +649,13 @@
                         matchedUserUID = emailSnap.docs[0].id;
                         matchedName = emailSnap.docs[0].data().username || "User";
                     }
-                } catch(err) {
-                    // Fail gracefully if email fields aren't universally indexed yet
-                }
+                } catch(err) {}
             }
 
             if(!matchedUserUID) {
-                // Generically append matching parameters using target string as raw fallback destination descriptor
                 matchedUserUID = identity.replace(/[.#@$\[\]]/g, "_"); 
             }
 
-            // Create a deterministic shared chat room block hash reference to bypass duplicate allocation anomalies
             const generatedChatRoomId = [currentUser.uid, matchedUserUID].sort().join("_WS_");
             
             await setDoc(doc(db, "chats", generatedChatRoomId), {
@@ -644,9 +674,8 @@
     };
 
     const triggerGroupOnboardingFlow = () => {
-        window.showModal("Group Channels", "Type 'create' to launch a brand new group or 'join' to merge into an existing room ID:", (choice) => {
-            const parsed = choice.trim().toLowerCase();
-            if(parsed === 'create') {
+        window.showModal("Group Channels", "Select whether you want to launch a new group or merge into an existing one:", (choice) => {
+            if(choice === 'Create New Group') {
                 window.showModal("Create Group", "Enter a title name for your group channel:", async (title) => {
                     const name = title.trim();
                     if(!name) return;
@@ -661,7 +690,7 @@
                     openActiveChatViewport(groupRef.id, 'group', name);
                 }, true);
                 document.getElementById('modal-input').placeholder = "Enter group name...";
-            } else if (parsed === 'join') {
+            } else if (choice === 'Join Existing ID') {
                 window.showModal("Join Group Channel", "Enter the exact Group ID code you received:", async (gId) => {
                     const groupId = gId.trim();
                     if(!groupId) return;
@@ -681,8 +710,7 @@
                 }, true);
                 document.getElementById('modal-input').placeholder = "Enter Group ID string...";
             }
-        }, true);
-        document.getElementById('modal-input').placeholder = "Type 'create' or 'join'";
+        }, false, ['Create New Group', 'Join Existing ID']);
     };
 
     window.openActiveChatViewport = (roomId, roomType, roomTitle) => {
@@ -773,7 +801,6 @@
             if(!target) return;
             
             let targetUID = target;
-            // Scan alternate lookup records if email string matching parameter patterns detected
             if(target.includes('@')) {
                 try {
                     const lookup = query(collection(db, "users"), where("email", "==", target));
@@ -814,7 +841,6 @@
         if(groupChatsUnsubscribe) groupChatsUnsubscribe();
         if(groupInvitesUnsubscribe) groupInvitesUnsubscribe();
 
-        // 1. Hook live listing streams for Friends Chat logs
         const friendsQuery = query(collection(db, "chats"), where("participants", "array-contains", currentUser.uid));
         directChatsUnsubscribe = onSnapshot(friendsQuery, (snap) => {
             const container = document.getElementById('friends-chats-list-target');
@@ -837,7 +863,6 @@
             }).join('');
         });
 
-        // 2. Hook live list stream matching Group documents channel records
         const groupsQuery = query(collection(db, "groups"), where("members", "array-contains", currentUser.uid));
         groupChatsUnsubscribe = onSnapshot(groupsQuery, (snap) => {
             const container = document.getElementById('groups-chats-list-target');
@@ -858,7 +883,6 @@
             }).join('');
         });
 
-        // 3. Hook pending group invitation card notifications wrapper channel
         const invitesQuery = query(collection(db, "invites"), where("invitedUID", "==", currentUser.uid), where("status", "==", "pending"));
         groupInvitesUnsubscribe = onSnapshot(invitesQuery, (snap) => {
             const container = document.getElementById('groups-invites-section-target');
@@ -892,9 +916,8 @@
         if (user) {
             currentUser = user;
             await loadProfile();
-            initializeSynchronizedChatViews(); // Fire the synchronous chatting listeners
+            initializeSynchronizedChatViews();
             
-            // Explicitly sync metadata to user account profile database reference to maintain indexing queries
             await setDoc(doc(db, "users", user.uid), {
                 uid: user.uid,
                 email: user.email
